@@ -37,7 +37,6 @@ func (TermboxTerminal) Init() error {
 	if mode := termbox.SetOutputMode(termbox.Output256); mode != termbox.Output256 {
 		return errors.New("could not set output mode")
 	}
-
 	return nil
 }
 
@@ -59,18 +58,17 @@ func (TermboxTerminal) Input() chan Key {
 }
 
 // Done interupts the event polling goroutine and closes termbox.
-func (t *TermboxTerminal) Done() {
+func (TermboxTerminal) Done() {
 	termbox.Interrupt()
 	termbox.Close()
 }
 
 // Clear clears the termbox cell buffer.
 func (TermboxTerminal) Clear() {
+	// Use CellBuffer instead of termbox.Clear to avoid extra Flush.
 	cells := termbox.CellBuffer()
 	for i := 0; i < len(cells); i++ {
-		cells[i].Ch = 0
-		cells[i].Fg = 0
-		cells[i].Bg = 0
+		cells[i] = termbox.Cell{}
 	}
 }
 
@@ -78,7 +76,7 @@ func (TermboxTerminal) Clear() {
 func (TermboxTerminal) Blit(v Vector, g Glyph) {
 	// The offsets in the Fg and Bg Attribute conversions are because termbox
 	// shifts the ANSI color codes up by one so zero values can be defaults,
-	// while hjkl prefers to use the standard code values.
+	// while hjkl prefers to use the standard ANSI color codes.
 	termbox.SetCell(v.X, v.Y, g.Ch, termbox.Attribute(g.Fg+1), termbox.Attribute(g.Bg+1))
 }
 
