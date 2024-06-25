@@ -27,33 +27,32 @@ func TestMobComponent_OpenTriggerMove(t *testing.T) {
 		return reflect.DeepEqual(v, &OccupantUpdate{mob})
 	}}
 	dst := NewTile(Vector{1, 1}, dstUpdate)
-	src.Handle(&AdjacentUpdate{Vector{1, 1}, dst})
+	SetAdjacent(src, Vector{1, 1}, dst)
 
 	mobUpdate := &MockComponent{F: func(v Event) bool {
 		return reflect.DeepEqual(v, &PosUpdate{dst})
 	}}
 	mob = NewMob(Ch('@'), mobUpdate)
-	mob.Handle(&PosUpdate{src})
-	src.Handle(&OccupantUpdate{mob})
+	PlaceMob(mob, src)
 
-	mob.Handle(&MoveTrigger{Vector{1, 1}})
+	Move(mob, Vector{1, 1})
 
 	if !srcUpdate.Ok {
 		t.Error("MoveTrigger failed to send OccupantUpdate to src")
 	}
-	if (OccupantQuery{}).Send(src) != nil {
+	if Occupant(src) != nil {
 		t.Error("MoveTrigger failed to update src.Occupant")
 	}
 	if !dstUpdate.Ok {
 		t.Error("MoveTrigger failed to send OccupantUpdate to dst")
 	}
-	if !reflect.DeepEqual(OccupantQuery{}.Send(dst), mob) {
+	if !reflect.DeepEqual(Occupant(dst), mob) {
 		t.Error("MoveTrigger failed to update dst.Occupant")
 	}
 	if !mobUpdate.Ok {
 		t.Error("MoveTrigger failed to send PosUpdate to mob")
 	}
-	if !reflect.DeepEqual(PosQuery{}.Send(mob), dst) {
+	if !reflect.DeepEqual(Pos(mob), dst) {
 		t.Error("MoveTrigger failed to update dst.Occupant")
 	}
 }
@@ -63,28 +62,27 @@ func TestMobComponent_CollideTriggerMove(t *testing.T) {
 
 	var src Entity = NewTile(Vector{0, 0})
 	var dst Entity = NewTile(Vector{1, 1})
-	dst.Handle(&PassUpdate{false})
-	src.Handle(&AdjacentUpdate{Vector{1, 1}, dst})
+	SetPass(dst, false)
+	SetAdjacent(src, Vector{1, 1}, dst)
 
 	mobUpdate := &MockComponent{F: func(v Event) bool {
 		return reflect.DeepEqual(v, &CollisionEvent{dst})
 	}}
 	mob = NewMob(Ch('@'), mobUpdate)
-	mob.Handle(&PosUpdate{src})
-	src.Handle(&OccupantUpdate{mob})
+	PlaceMob(mob, src)
 
-	mob.Handle(&MoveTrigger{Vector{1, 1}})
+	Move(mob, Vector{1, 1})
 
-	if !reflect.DeepEqual(OccupantQuery{}.Send(src), mob) {
+	if !reflect.DeepEqual(Occupant(src), mob) {
 		t.Error("MoveTrigger erroneously updated src.Occupant")
 	}
-	if (OccupantQuery{}).Send(dst) != nil {
+	if Occupant(dst) != nil {
 		t.Error("MoveTrigger erroneously updated dst.Occupant")
 	}
 	if !mobUpdate.Ok {
 		t.Error("MoveTrigger failed to send CollisionEvent to mob")
 	}
-	if !reflect.DeepEqual(PosQuery{}.Send(mob), src) {
+	if !reflect.DeepEqual(Pos(mob), src) {
 		t.Error("MoveTrigger erroneously updated dst.Occupant")
 	}
 }
@@ -96,28 +94,27 @@ func TestMobComponent_BumpTriggerMove(t *testing.T) {
 
 	var src Entity = NewTile(Vector{0, 0})
 	var dst Entity = NewTile(Vector{1, 1})
-	dst.Handle(&OccupantUpdate{bumped})
-	src.Handle(&AdjacentUpdate{Vector{1, 1}, dst})
+	SetOccupant(dst, bumped)
+	SetAdjacent(src, Vector{1, 1}, dst)
 
 	mobUpdate := &MockComponent{F: func(v Event) bool {
 		return reflect.DeepEqual(v, &BumpEvent{bumped})
 	}}
 	mob = NewMob(Ch('@'), mobUpdate)
-	mob.Handle(&PosUpdate{src})
-	src.Handle(&OccupantUpdate{mob})
+	PlaceMob(mob, src)
 
-	mob.Handle(&MoveTrigger{Vector{1, 1}})
+	Move(mob, Vector{1, 1})
 
-	if !reflect.DeepEqual(OccupantQuery{}.Send(src), mob) {
+	if !reflect.DeepEqual(Occupant(src), mob) {
 		t.Error("MoveTrigger erroneously updated src.Occupant")
 	}
-	if !reflect.DeepEqual(OccupantQuery{}.Send(dst), bumped) {
+	if !reflect.DeepEqual(Occupant(dst), bumped) {
 		t.Error("MoveTrigger erroneously updated dst.Occupant")
 	}
 	if !mobUpdate.Ok {
 		t.Error("MoveTrigger failed to send CollisionEvent to mob")
 	}
-	if !reflect.DeepEqual(PosQuery{}.Send(mob), src) {
+	if !reflect.DeepEqual(Pos(mob), src) {
 		t.Error("MoveTrigger erroneously updated dst.Occupant")
 	}
 }
