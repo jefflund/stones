@@ -31,13 +31,22 @@ func TestMob_CollideTriggerMove(t *testing.T) {
 	src := NewTile(Vec(0, 0))
 	dst := NewTile(Vec(1, 1))
 
+	handlerCalled := false
 	mob.Pos = src
+	mob.OnCollide = func(m *Mob, t *Tile) {
+		if m == mob && t == dst {
+			handlerCalled = true
+		}
+	}
 	src.Adjacent[Vec(1, 1)] = dst
 	src.Occupant = mob
 	dst.Pass = false
 
 	mob.Move(Vec(1, 1))
 
+	if !handlerCalled {
+		t.Error("Move failed to call OnCollide handler")
+	}
 	if src.Occupant != mob {
 		t.Error("Move erroneously updated src.Occupant on collision")
 	}
@@ -55,13 +64,22 @@ func TestMob_Bump(t *testing.T) {
 	src := NewTile(Vec(0, 0))
 	dst := NewTile(Vec(1, 1))
 
+	handlerCalled := false
 	mob.Pos = src
+	mob.OnBump = func(m, b *Mob) {
+		if m == mob && b == bumped {
+			handlerCalled = true
+		}
+	}
 	src.Adjacent[Vec(1, 1)] = dst
 	src.Occupant = mob
 	dst.Occupant = bumped
 
 	mob.Move(Vec(1, 1))
 
+	if !handlerCalled {
+		t.Error("Move failed to call OnBump handler")
+	}
 	if src.Occupant != mob {
 		t.Error("Move erroneously updated src.Occupant on bump")
 	}

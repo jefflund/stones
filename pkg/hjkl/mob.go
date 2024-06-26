@@ -4,6 +4,9 @@ package hjkl
 type Mob struct {
 	Face Glyph
 	Pos  *Tile
+
+	OnCollide func(*Mob, *Tile)
+	OnBump    func(*Mob, *Mob)
 }
 
 // NewMob constructs a Mob with the given Glyph face.
@@ -17,22 +20,14 @@ func NewMob(face Glyph) *Mob {
 func (m *Mob) Move(delta Vector) {
 	dst := m.Pos.Adjacent[delta]
 	if !dst.Pass {
-		m.Collide(dst)
+		m.OnCollide(m, dst)
 	} else if dst.Occupant != nil {
-		m.Bump(dst.Occupant)
+		m.OnBump(m, dst.Occupant)
 	} else {
 		m.Pos.Occupant = nil
 		dst.Occupant = m
 		m.Pos = dst
 	}
-}
-
-// Collide is called when the Mob tries to move to an impassable Tile.
-func (m *Mob) Collide(obstacle *Tile) {
-}
-
-// Bump is called when the Mob tries to move to an occupied Tile.
-func (m *Mob) Bump(bumped *Mob) {
 }
 
 // Tile is a square in the game map.
