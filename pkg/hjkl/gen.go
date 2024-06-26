@@ -1,11 +1,14 @@
 package hjkl
 
-type GenTile func(Vector) Entity
+// GenTile is function which generates a new Tile.
+type GenTile func(Vector) *Tile
 
-type ModTile func(Entity)
+// ModTile is a function which modifies an existing Tile.
+type ModTile func(*Tile)
 
-func GenTileGrid(cols, rows int, f GenTile) []Entity {
-	grid := make(map[Vector]Entity)
+// GenTileGrid creates a new eight-connected grid of Tile.
+func GenTileGrid(cols, rows int, f GenTile) []*Tile {
+	grid := make(map[Vector]*Tile)
 	for x := 0; x < cols; x++ {
 		for y := 0; y < rows; y++ {
 			grid[Vector{x, y}] = f(Vector{x, y})
@@ -15,12 +18,12 @@ func GenTileGrid(cols, rows int, f GenTile) []Entity {
 	for off, src := range grid {
 		for _, delta := range dirs8 {
 			if dst, ok := grid[off.Add(delta)]; ok {
-				SetAdjacent(src, delta, dst)
+				src.Adjacent[delta] = dst
 			}
 		}
 	}
 
-	tiles := make([]Entity, 0, len(grid))
+	tiles := make([]*Tile, 0, len(grid))
 	for x := 0; x < cols; x++ {
 		for y := 0; y < rows; y++ {
 			tiles = append(tiles, grid[Vector{x, y}])
@@ -29,9 +32,10 @@ func GenTileGrid(cols, rows int, f GenTile) []Entity {
 	return tiles
 }
 
-func GneFence(tiles []Entity, f ModTile) {
+// GenFence modifies edge Tile.
+func GenFence(tiles []*Tile, f ModTile) {
 	for _, t := range tiles {
-		if Outdegree(t) < 8 {
+		if len(t.Adjacent) < 8 {
 			f(t)
 		}
 	}
