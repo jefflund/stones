@@ -118,6 +118,8 @@ func (c *TileComponent) Process(e Entity, v Event) {
 		v.Response = c.Adjacent[v.Delta]
 	case *AdjacentUpdate:
 		c.Adjacent[v.Delta] = v.Update
+	case *OutdegreeQuery:
+		v.Response = len(c.Adjacent)
 	}
 }
 
@@ -279,4 +281,16 @@ type AdjacentUpdate struct {
 // SetAdjacent sends an AdjacentUpdate to an Entity.
 func SetAdjacent(e Entity, delta Vector, update Entity) {
 	e.Handle(&AdjacentUpdate{delta, update})
+}
+
+// OutdegreeQuery is an Event queryig an Entity for its int outdegree.
+type OutdegreeQuery struct {
+	Response int
+}
+
+// Outdegree sends an OutdegreeQuery to an Entity and returns the response.
+func Outdegree(e Entity) int {
+	v := OutdegreeQuery{}
+	e.Handle(&v)
+	return v.Response
 }

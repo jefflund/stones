@@ -52,6 +52,18 @@ func (a Vector) Chebyshev() int {
 	return Max(Abs(a.X), Abs(a.Y))
 }
 
+// dirs8 contains the eight point compass directions as Vector.
+var dirs8 = []Vector{
+	{-1, -1},
+	{-1, 0},
+	{-1, 1},
+	{0, -1},
+	{0, 1},
+	{1, -1},
+	{1, 0},
+	{1, 1},
+}
+
 // Color describes the color of a Glyph as a uint8 ANSI 256 color code.
 type Color uint8
 
