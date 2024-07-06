@@ -4,10 +4,12 @@ import (
 	"testing"
 )
 
+type TestData struct{}
+
 func TestMob_Move(t *testing.T) {
-	mob := NewMob(Ch('@'))
-	src := NewTile(Vec(0, 0))
-	dst := NewTile(Vec(1, 1))
+	mob := NewMob(Ch('@'), TestData{})
+	src := NewTile[TestData](Vec(0, 0))
+	dst := NewTile[TestData](Vec(1, 1))
 
 	mob.Pos = src
 	src.Adjacent[Vec(1, 1)] = dst
@@ -27,13 +29,13 @@ func TestMob_Move(t *testing.T) {
 }
 
 func TestMob_CollideTriggerMove(t *testing.T) {
-	mob := NewMob(Ch('@'))
-	src := NewTile(Vec(0, 0))
-	dst := NewTile(Vec(1, 1))
+	mob := NewMob(Ch('@'), TestData{})
+	src := NewTile[TestData](Vec(0, 0))
+	dst := NewTile[TestData](Vec(1, 1))
 
 	handlerCalled := false
 	mob.Pos = src
-	mob.OnCollide = func(m *Mob, t *Tile) {
+	mob.OnCollide = func(m *Mob[TestData], t *Tile[TestData]) {
 		if m == mob && t == dst {
 			handlerCalled = true
 		}
@@ -59,14 +61,14 @@ func TestMob_CollideTriggerMove(t *testing.T) {
 }
 
 func TestMob_Bump(t *testing.T) {
-	mob := NewMob(Ch('@'))
-	bumped := NewMob(Ch('D'))
-	src := NewTile(Vec(0, 0))
-	dst := NewTile(Vec(1, 1))
+	mob := NewMob(Ch('@'), TestData{})
+	bumped := NewMob(Ch('D'), TestData{})
+	src := NewTile[TestData](Vec(0, 0))
+	dst := NewTile[TestData](Vec(1, 1))
 
 	handlerCalled := false
 	mob.Pos = src
-	mob.OnBump = func(m, b *Mob) {
+	mob.OnBump = func(m, b *Mob[TestData]) {
 		if m == mob && b == bumped {
 			handlerCalled = true
 		}

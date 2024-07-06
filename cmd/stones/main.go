@@ -1,6 +1,9 @@
 package main
 
-import "github.com/jefflund/stones/pkg/hjkl"
+import (
+	"github.com/jefflund/stones/pkg/habilis"
+	"github.com/jefflund/stones/pkg/hjkl"
+)
 
 var KeyMap = map[hjkl.Key]hjkl.Vector{
 	'h': hjkl.Vec(-1, 0),
@@ -10,14 +13,21 @@ var KeyMap = map[hjkl.Key]hjkl.Vector{
 }
 
 type Game struct {
-	Hero  *hjkl.Mob
-	Tiles []*hjkl.Tile
+	Hero  *hjkl.Mob[habilis.Skin]
+	Tiles []*hjkl.Tile[habilis.Skin]
 }
 
 func NewGame() *Game {
-	hero := hjkl.NewMob(hjkl.Ch('@'))
-	tiles := hjkl.GenTileGrid(80, 24, hjkl.NewTile)
-	hjkl.GenFence(tiles, func(t *hjkl.Tile) {
+	hero := habilis.NewSkinMob(
+		"Grog",
+		hjkl.Ch('@'),
+		habilis.NewCircle("Core", habilis.StoneCore, 3),
+		habilis.NewCircle("Rogok", habilis.StoneDmg, 1),
+		habilis.NewCircle("Warrior", habilis.StoneMelee, 1),
+		habilis.NewCircle("Tough", habilis.StoneArm, 1),
+	)
+	tiles := hjkl.GenTileGrid(80, 24, hjkl.NewTile[habilis.Skin])
+	hjkl.GenFence(tiles, func(t *hjkl.Tile[habilis.Skin]) {
 		t.Face = hjkl.Ch('#')
 		t.Pass = false
 	})

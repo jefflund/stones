@@ -5,10 +5,10 @@ import "testing"
 func TestGenTileGrid_GenTile(t *testing.T) {
 	numCalls := 0
 	offsets := make(map[Vector]struct{})
-	GenTileGrid(20, 10, func(o Vector) *Tile {
+	GenTileGrid(20, 10, func(o Vector) *Tile[TestData] {
 		numCalls++
 		offsets[o] = struct{}{}
-		return NewTile(o)
+		return NewTile[TestData](o)
 	})
 	if numCalls != 20*10 {
 		t.Fatal("GenTile called incorrect number of times")
@@ -23,7 +23,7 @@ func TestGenTileGrid_GenTile(t *testing.T) {
 }
 
 func TestGenTileGrid_Offsets(t *testing.T) {
-	grid := GenTileGrid(20, 10, NewTile)
+	grid := GenTileGrid(20, 10, NewTile[TestData])
 	if len(grid) != 20*10 {
 		t.Fatal("GetTileGrid created incorrect grid size")
 	}
@@ -45,7 +45,7 @@ func TestGenTileGrid_Offsets(t *testing.T) {
 
 func TestGenTileGrid_Connectivity(t *testing.T) {
 	const Cols, Rows = 20, 10
-	grid := GenTileGrid(Cols, Rows, NewTile)
+	grid := GenTileGrid(Cols, Rows, NewTile[TestData])
 	for _, src := range grid {
 		xBound := src.Offset.X == 0 || src.Offset.X == Cols-1
 		yBound := src.Offset.Y == 0 || src.Offset.Y == Rows-1
@@ -69,8 +69,8 @@ func TestGenTileGrid_Connectivity(t *testing.T) {
 
 func TestGenFence(t *testing.T) {
 	const Cols, Rows = 20, 10
-	grid := GenTileGrid(Cols, Rows, NewTile)
-	GenFence(grid, func(t *Tile) {
+	grid := GenTileGrid(Cols, Rows, NewTile[TestData])
+	GenFence(grid, func(t *Tile[TestData]) {
 		t.Pass = false
 	})
 

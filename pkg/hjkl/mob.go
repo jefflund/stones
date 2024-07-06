@@ -1,23 +1,26 @@
 package hjkl
 
 // Mob is a game object which occupies Tile.
-type Mob struct {
+type Mob[T any] struct {
 	Face Glyph
-	Pos  *Tile
+	Pos  *Tile[T]
 
-	OnCollide func(*Mob, *Tile)
-	OnBump    func(*Mob, *Mob)
+	Data T
+
+	OnCollide func(*Mob[T], *Tile[T])
+	OnBump    func(*Mob[T], *Mob[T])
 }
 
 // NewMob constructs a Mob with the given Glyph face.
-func NewMob(face Glyph) *Mob {
-	return &Mob{
+func NewMob[T any](face Glyph, data T) *Mob[T] {
+	return &Mob[T]{
 		Face: face,
+		Data: data,
 	}
 }
 
 // Move attempts to move the Mob to a new Tile.
-func (m *Mob) Move(delta Vector) {
+func (m *Mob[T]) Move(delta Vector) {
 	dst := m.Pos.Adjacent[delta]
 	if !dst.Pass {
 		m.OnCollide(m, dst)
@@ -31,21 +34,21 @@ func (m *Mob) Move(delta Vector) {
 }
 
 // Tile is a square in the game map.
-type Tile struct {
+type Tile[T any] struct {
 	Face     Glyph
 	Pass     bool
-	Occupant *Mob
+	Occupant *Mob[T]
 
 	Offset   Vector
-	Adjacent map[Vector]*Tile
+	Adjacent map[Vector]*Tile[T]
 }
 
 // NewTile creates a new Tile with the given Vector offset.
-func NewTile(offset Vector) *Tile {
-	return &Tile{
+func NewTile[T any](offset Vector) *Tile[T] {
+	return &Tile[T]{
 		Face:     Ch('.'),
 		Pass:     true,
 		Offset:   offset,
-		Adjacent: make(map[Vector]*Tile),
+		Adjacent: make(map[Vector]*Tile[T]),
 	}
 }
