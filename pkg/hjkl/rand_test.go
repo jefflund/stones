@@ -117,6 +117,27 @@ func TestRandChoice(t *testing.T) {
 	})
 }
 
+func TestRandRange_1D6(t *testing.T) {
+	exp := []int{0, 100, 100, 100, 100, 100, 100}
+	RunX2TestCases(t, "RandRange(1, 6)", exp, func() int {
+		return RandRange(1, 6)
+	})
+}
+
+func TestRandRange_10_15(t *testing.T) {
+	exp := []int{100, 100, 100, 100, 100, 100}
+	RunX2TestCases(t, "RandRange(10, 15)", exp, func() int {
+		return RandRange(10, 15) - 10
+	})
+}
+
+func TestRandRange_5_5(t *testing.T) {
+	exp := []int{10}
+	RunX2TestCases(t, "RandRange(5, 5)", exp, func() int {
+		return RandRange(5, 5) - 5
+	})
+}
+
 func TestRandChance(t *testing.T) {
 	cases := []struct {
 		Exp []int
@@ -212,6 +233,15 @@ func TestRandIntn_Neg(t *testing.T) {
 		}
 	}()
 	RandIntn(-1)
+}
+
+func TestRandRange_Invert(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RandRange failed to panic on b < a")
+		}
+	}()
+	RandRange(6, 5)
 }
 
 func TestRandChoice_Empty(t *testing.T) {

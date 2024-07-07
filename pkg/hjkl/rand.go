@@ -37,6 +37,14 @@ func RandIntn(n int) int {
 	return RandInt() % n
 }
 
+// RandRange gets a pseudo-random int in [a, b]. In panics if b < a.
+func RandRange(a, b int) int {
+	if b < a {
+		panic("Cannot have b < a")
+	}
+	return RandIntn(b-a+1) + a
+}
+
 // RandFloat64 gets a pseudo-random float64 in [0, 1).
 func RandFloat64() float64 {
 	for {

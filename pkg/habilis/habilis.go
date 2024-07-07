@@ -14,7 +14,8 @@ const (
 	StoneDmg
 	StoneArm
 
-	StoneAny Stone = 0
+	StoneAny  Stone = 0
+	StoneNone Stone = ^StoneAny
 
 	StoneMelee = StoneHit | StoneEvs | StoneDmg | StoneArm
 )
@@ -44,6 +45,23 @@ func NewSkinMob(name string, face hjkl.Glyph, circles ...Circle) *hjkl.Mob[Skin]
 	m.OnCollide = s.OnCollide
 	m.OnBump = s.OnBump
 	return m
+}
+
+// Count gets the total count for a Stone type.
+func (s *Skin) Count(stone Stone) int {
+	total := 0
+	for _, c := range s.Circles {
+		if c.Stone&stone == stone {
+			total += c.Count
+		}
+	}
+	return total
+}
+
+// Roll gets a roll for a particular Stone type.
+func (s *Skin) Roll(bonus Stone) int {
+	core := s.Count(StoneCore)
+	return hjkl.RandRange(0, core) + s.Count(bonus)
 }
 
 // OnCollide is currently a noop.
