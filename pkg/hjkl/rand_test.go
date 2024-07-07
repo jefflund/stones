@@ -116,3 +116,145 @@ func TestRandChoice(t *testing.T) {
 		return index[RandChoice(a)]
 	})
 }
+
+func TestRandChance(t *testing.T) {
+	cases := []struct {
+		Exp []int
+		P   float64
+	}{
+		{[]int{1000, 0}, 0},
+		{[]int{990, 10}, .01},
+		{[]int{900, 100}, .1},
+		{[]int{500, 500}, .5},
+		{[]int{100, 900}, .9},
+		{[]int{50, 950}, .95},
+		{[]int{0, 1000}, 1},
+	}
+	for _, c := range cases {
+		name := fmt.Sprintf("RandChance(%.2f)", c.P)
+		t.Run(name, func(t *testing.T) {
+			RunX2TestCases(t, name, c.Exp, func() int {
+				if RandChance(c.P) {
+					return 1
+				}
+				return 0
+			})
+		})
+	}
+}
+
+func TestRandSelect(t *testing.T) {
+	tiles := GenTileGrid(10, 10, func(o Vector) *Tile[TestData] {
+		t := NewTile[TestData](o)
+		if RandChance(.1) {
+			t.Pass = false
+		}
+		return t
+	})
+	GenFence(tiles, func(t *Tile[TestData]) {
+		t.Pass = false
+	})
+	index := func(t *Tile[TestData]) int { return t.Offset.X + 10*t.Offset.Y }
+	pass := func(t *Tile[TestData]) bool { return t.Pass }
+	exp := make([]int, 100)
+	for _, t := range tiles {
+		if pass(t) {
+			exp[index(t)] = 100
+		}
+	}
+	RunX2TestCases(t, "RandSelect", exp, func() int {
+		return index(RandSelect(tiles, pass))
+	})
+}
+
+func BenchmarkRandSelect_Easy(b *testing.B) {
+	tiles := GenTileGrid(100, 100, func(o Vector) *Tile[TestData] {
+		t := NewTile[TestData](o)
+		if RandChance(.1) {
+			t.Pass = false
+		}
+		return t
+	})
+	pass := func(t *Tile[TestData]) bool { return t.Pass }
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		RandSelect(tiles, pass)
+	}
+}
+
+func BenchmarkRandSelect_Hard(b *testing.B) {
+	tiles := GenTileGrid(1000, 1000, func(o Vector) *Tile[TestData] {
+		t := NewTile[TestData](o)
+		t.Pass = false
+		return t
+	})
+	tiles[0].Pass = true
+	pass := func(t *Tile[TestData]) bool { return t.Pass }
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		RandSelect(tiles, pass)
+	}
+}
+
+func TestRandIntn_Zero(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RandIntn(0) failed to panic")
+		}
+	}()
+	RandIntn(0)
+}
+
+func TestRandIntn_Neg(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RandIntn(-1) failed to panic")
+		}
+	}()
+	RandIntn(-1)
+}
+
+func TestRandChoice_Empty(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RandChoice failed to panic on empty")
+		}
+	}()
+	RandChoice([]int{})
+}
+
+func TestRandChance_LT0(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RandChance(-0.0001) failed to panic")
+		}
+	}()
+	RandChance(-0.0001)
+}
+
+func TestRandChance_GT1(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RandChance(1.0001) failed to panic")
+		}
+	}()
+	RandChance(1.0001)
+}
+
+func TestRandSelect_Empty(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RandSelect failed to panic on empty")
+		}
+	}()
+	RandSelect([]int{}, func(x int) bool { return true })
+}
+
+func TestRandSelect_Invalid(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RandSelect failed to panic on empty")
+		}
+	}()
+	RandSelect([]int{1, 2, 3}, func(x int) bool { return false })
+}

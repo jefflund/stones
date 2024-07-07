@@ -10,6 +10,23 @@ var KeyMap = map[hjkl.Key]hjkl.Vector{
 	'j': hjkl.Vec(0, 1),
 	'k': hjkl.Vec(0, -1),
 	'l': hjkl.Vec(1, 0),
+	'n': hjkl.Vec(1, 1),
+	'b': hjkl.Vec(-1, 1),
+	'u': hjkl.Vec(1, -1),
+	'y': hjkl.Vec(-1, -1),
+}
+
+var Ground = []hjkl.Glyph{
+	{Ch: '.', Fg: hjkl.ColorGreen},
+	{Ch: '.', Fg: hjkl.ColorLightGreen},
+	{Ch: '.', Fg: hjkl.ColorLightGreen},
+}
+
+var Tree = []hjkl.Glyph{
+	{Ch: '%', Fg: hjkl.ColorGreen},
+	{Ch: '%', Fg: hjkl.ColorLightGreen},
+	{Ch: '%', Fg: hjkl.ColorYellow},
+	{Ch: '%', Fg: hjkl.ColorLightYellow},
 }
 
 type Game struct {
@@ -18,11 +35,23 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	tiles := hjkl.GenTileGrid(80, 24, hjkl.NewTile[habilis.Skin])
+	tiles := hjkl.GenTileGrid(80, 24, func(o hjkl.Vector) *hjkl.Tile[habilis.Skin] {
+		t := hjkl.NewTile[habilis.Skin](o)
+		if hjkl.RandChance(.1) {
+			t.Pass = false
+			t.Face = hjkl.RandChoice(Tree)
+		} else {
+			t.Face = hjkl.RandChoice(Ground)
+		}
+		return t
+	})
 	hjkl.GenFence(tiles, func(t *hjkl.Tile[habilis.Skin]) {
 		t.Face = hjkl.Ch('#')
 		t.Pass = false
 	})
+	open := func(t *hjkl.Tile[habilis.Skin]) bool {
+		return t.Pass && t.Occupant == nil
+	}
 
 	hero := habilis.NewSkinMob(
 		"Grog",
@@ -32,7 +61,7 @@ func NewGame() *Game {
 		habilis.NewCircle("Warrior", habilis.StoneMelee, 1),
 		habilis.NewCircle("Tough", habilis.StoneArm, 1),
 	)
-	hjkl.PlaceMob(hero, tiles[1000])
+	hjkl.PlaceMob(hero, hjkl.RandSelect(tiles, open))
 
 	prey := habilis.NewSkinMob(
 		"Mammoth",
@@ -41,7 +70,7 @@ func NewGame() *Game {
 		habilis.NewCircle("Tusks", habilis.StoneMelee, 1),
 		habilis.NewCircle("Tough", habilis.StoneArm, 1),
 	)
-	hjkl.PlaceMob(prey, tiles[500])
+	hjkl.PlaceMob(prey, hjkl.RandSelect(tiles, open))
 
 	return &Game{hero, tiles}
 }
