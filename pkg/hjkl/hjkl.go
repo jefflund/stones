@@ -154,3 +154,9 @@ func NewTile[T any](offset Vector) *Tile[T] {
 		Adjacent: make(map[Vector]*Tile[T]),
 	}
 }
+
+// PlaceMob places a Mob on a Tile.
+func PlaceMob[T any](m *Mob[T], t *Tile[T]) {
+	m.Pos = t
+	t.Occupant = m
+}

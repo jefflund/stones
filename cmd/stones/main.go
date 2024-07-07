@@ -18,6 +18,12 @@ type Game struct {
 }
 
 func NewGame() *Game {
+	tiles := hjkl.GenTileGrid(80, 24, hjkl.NewTile[habilis.Skin])
+	hjkl.GenFence(tiles, func(t *hjkl.Tile[habilis.Skin]) {
+		t.Face = hjkl.Ch('#')
+		t.Pass = false
+	})
+
 	hero := habilis.NewSkinMob(
 		"Grog",
 		hjkl.Ch('@'),
@@ -26,13 +32,17 @@ func NewGame() *Game {
 		habilis.NewCircle("Warrior", habilis.StoneMelee, 1),
 		habilis.NewCircle("Tough", habilis.StoneArm, 1),
 	)
-	tiles := hjkl.GenTileGrid(80, 24, hjkl.NewTile[habilis.Skin])
-	hjkl.GenFence(tiles, func(t *hjkl.Tile[habilis.Skin]) {
-		t.Face = hjkl.Ch('#')
-		t.Pass = false
-	})
-	hero.Pos = tiles[1000]
-	hero.Pos.Occupant = hero
+	hjkl.PlaceMob(hero, tiles[1000])
+
+	prey := habilis.NewSkinMob(
+		"Mammoth",
+		hjkl.Ch('M'),
+		habilis.NewCircle("Core", habilis.StoneCore, 9),
+		habilis.NewCircle("Tusks", habilis.StoneMelee, 1),
+		habilis.NewCircle("Tough", habilis.StoneArm, 1),
+	)
+	hjkl.PlaceMob(prey, tiles[500])
+
 	return &Game{hero, tiles}
 }
 
@@ -50,9 +60,12 @@ func (g *Game) Update(ks []hjkl.Key) error {
 
 func (g *Game) Draw(c hjkl.Canvas) {
 	for _, t := range g.Tiles {
-		c.Blit(t.Offset, t.Face)
+		if t.Occupant != nil {
+			c.Blit(t.Offset, t.Occupant.Face)
+		} else {
+			c.Blit(t.Offset, t.Face)
+		}
 	}
-	c.Blit(g.Hero.Pos.Offset, g.Hero.Face)
 }
 
 func main() {

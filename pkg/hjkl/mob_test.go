@@ -92,3 +92,15 @@ func TestMob_Bump(t *testing.T) {
 		t.Error("Move erroneously updated mob.Pos on bump")
 	}
 }
+
+func TestPlaceMob(t *testing.T) {
+	mob := NewMob(Ch('@'), TestData{})
+	dst := NewTile[TestData](Vec(1, 1))
+	PlaceMob(mob, dst)
+	if mob.Pos != dst {
+		t.Error("PlaceMob failed to set mob.Pos")
+	}
+	if dst.Occupant != mob {
+		t.Error("PlaceMob failed to set dst.Occupant")
+	}
+}
