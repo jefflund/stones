@@ -37,6 +37,16 @@ func RandIntn(n int) int {
 	return RandInt() % n
 }
 
+// RandFloat64 gets a pseudo-random float64 in [0, 1).
+func RandFloat64() float64 {
+	for {
+		f := float64(RandInt()) / (1 << 63)
+		if f < 1 {
+			return f
+		}
+	}
+}
+
 // RandChoice gets a pseudo-random element of a. It panics if len(a) == 0.
 func RandChoice[T any](a []T) T {
 	if len(a) == 0 {

@@ -98,6 +98,16 @@ func TestRandIntn_100(t *testing.T) {
 	})
 }
 
+func TestRandFloat64(t *testing.T) {
+	exp := make([]int, 100)
+	for i := 0; i < 100; i++ {
+		exp[i] = 100
+	}
+	RunX2TestCases(t, "RandFloat64", exp, func() int {
+		return int(RandFloat64() * 100)
+	})
+}
+
 func TestRandChoice(t *testing.T) {
 	a := []rune{'a', 'b', 'c', 'd'}
 	index := map[rune]int{'a': 0, 'b': 1, 'c': 2, 'd': 3}
