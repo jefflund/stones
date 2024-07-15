@@ -88,13 +88,9 @@ func (g *Game) Update(ks []hjkl.Key) error {
 }
 
 func (g *Game) Draw(c hjkl.Canvas) {
-	for _, t := range g.Tiles {
-		if t.Occupant != nil {
-			c.Blit(t.Offset, t.Occupant.Face)
-		} else {
-			c.Blit(t.Offset, t.Face)
-		}
-	}
+	hjkl.WithWindow(c, hjkl.Vec(0, 0), hjkl.Vec(80, 24), func(c hjkl.Canvas) {
+		hjkl.DisplayTiles(c, g.Tiles)
+	})
 }
 
 func main() {
