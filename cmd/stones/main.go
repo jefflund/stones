@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/jefflund/stones/pkg/habilis"
 	"github.com/jefflund/stones/pkg/hjkl"
 )
@@ -35,7 +38,7 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	tiles := hjkl.GenTileGrid(80, 24, func(o hjkl.Vector) *hjkl.Tile[habilis.Skin] {
+	tiles := hjkl.GenTileGrid(60, 22, func(o hjkl.Vector) *hjkl.Tile[habilis.Skin] {
 		t := hjkl.NewTile[habilis.Skin](o)
 		if hjkl.RandChance(.1) {
 			t.Pass = false
@@ -44,10 +47,6 @@ func NewGame() *Game {
 			t.Face = hjkl.RandChoice(Ground)
 		}
 		return t
-	})
-	hjkl.GenFence(tiles, func(t *hjkl.Tile[habilis.Skin]) {
-		t.Face = hjkl.Ch('#')
-		t.Pass = false
 	})
 	open := func(t *hjkl.Tile[habilis.Skin]) bool {
 		return t.Pass && t.Occupant == nil
@@ -81,15 +80,30 @@ func (g *Game) Update(ks []hjkl.Key) error {
 			return hjkl.Termination
 		}
 		if delta, ok := KeyMap[k]; ok {
-			g.Hero.Move(delta)
+			if g.Hero.Pos.Adjacent[delta] != nil {
+				g.Hero.Move(delta)
+			}
 		}
 	}
 	return nil
 }
 
+func (g *Game) Status() string {
+	lines := []string{
+		g.Hero.Data.Name,
+		fmt.Sprintf("Stones: %d", g.Hero.Data.Count(habilis.StoneAny)),
+		fmt.Sprintf("Pos: %v", g.Hero.Pos.Offset),
+	}
+	return strings.Join(lines, "\n")
+}
+
 func (g *Game) Draw(c hjkl.Canvas) {
-	hjkl.WithWindow(c, hjkl.Vec(0, 0), hjkl.Vec(80, 24), func(c hjkl.Canvas) {
+	hjkl.DisplayBorder(c, 80, 24)
+	hjkl.WithWindow(c, hjkl.Vec(1, 1), hjkl.Vec(60, 22), func(c hjkl.Canvas) {
 		hjkl.DisplayTiles(c, g.Tiles)
+	})
+	hjkl.WithWindow(c, hjkl.Vec(61, 1), hjkl.Vec(18, 22), func(c hjkl.Canvas) {
+		hjkl.DisplayString(c, g.Status())
 	})
 }
 

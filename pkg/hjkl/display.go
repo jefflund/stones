@@ -29,3 +29,32 @@ func DisplayTiles[T any](c Canvas, tiles []*Tile[T]) {
 		}
 	}
 }
+
+// DisplayBorder Blits a border with the given size.
+func DisplayBorder(c Canvas, cols, rows int) {
+	for x := 1; x < cols-1; x++ {
+		c.Blit(Vec(x, 0), Ch('-'))
+		c.Blit(Vec(x, rows-1), Ch('-'))
+	}
+	for y := 1; y < rows-1; y++ {
+		c.Blit(Vec(0, y), Ch('|'))
+		c.Blit(Vec(cols-1, y), Ch('|'))
+	}
+	c.Blit(Vec(0, 0), Ch('+'))
+	c.Blit(Vec(cols-1, 0), Ch('+'))
+	c.Blit(Vec(0, rows-1), Ch('+'))
+	c.Blit(Vec(cols-1, rows-1), Ch('+'))
+}
+
+// DisplayString Blits a string.
+func DisplayString(c Canvas, s string) {
+	x, y := 0, 0
+	for _, ch := range s {
+		if ch == '\n' {
+			x, y = 0, y+1
+		} else {
+			c.Blit(Vec(x, y), Ch(ch))
+			x++
+		}
+	}
+}

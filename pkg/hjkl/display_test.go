@@ -56,3 +56,23 @@ func TestDisplayTiles(t *testing.T) {
 		t.Error("DisplayTiles gave incorrect Canvas state")
 	}
 }
+
+func TestDisplayBorder(t *testing.T) {
+	c := &MockCanvas{}
+	DisplayBorder(c, 4, 3)
+	expected := map[Vector]Glyph{
+		Vec(0, 0): Ch('+'),
+		Vec(1, 0): Ch('-'),
+		Vec(2, 0): Ch('-'),
+		Vec(3, 0): Ch('+'),
+		Vec(0, 1): Ch('|'),
+		Vec(3, 1): Ch('|'),
+		Vec(0, 2): Ch('+'),
+		Vec(1, 2): Ch('-'),
+		Vec(2, 2): Ch('-'),
+		Vec(3, 2): Ch('+'),
+	}
+	if !reflect.DeepEqual(c.Buffer, expected) {
+		t.Error("DisplayBorder gave incorrect Canvas state")
+	}
+}
