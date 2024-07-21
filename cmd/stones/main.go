@@ -93,6 +93,13 @@ func (g *Game) Status() string {
 		fmt.Sprintf("Stones: %d", g.Hero.Data.Count(habilis.StoneAny)),
 		fmt.Sprintf("Pos: %v", g.Hero.Pos.Offset),
 	}
+	if g.Hero.Data.Mark != nil {
+		lines = append(lines, []string{
+			"",
+			g.Hero.Data.Mark.Data.Name,
+			fmt.Sprintf("Stones: %d", g.Hero.Data.Mark.Data.Count(habilis.StoneAny)),
+		}...)
+	}
 	return strings.Join(lines, "\n")
 }
 
