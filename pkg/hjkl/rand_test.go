@@ -164,6 +164,23 @@ func TestRandChance(t *testing.T) {
 	}
 }
 
+func TestRandIndex(t *testing.T) {
+	a := []rune{'a', 'b', 'c', 'd', 'e'}
+	w := map[rune]int{
+		'a': 1,
+		'b': 6,
+		'c': 2,
+		'd': 0,
+		'e': 3,
+	}
+	exp := []int{100, 600, 200, 0, 300}
+	RunX2TestCases(t, "RandIndex", exp, func() int {
+		return RandIndex(a, func(r rune) int {
+			return w[r]
+		})
+	})
+}
+
 func TestRandSelect(t *testing.T) {
 	tiles := GenTileGrid(10, 10, func(o Vector) *Tile[TestData] {
 		t := NewTile[TestData](o)

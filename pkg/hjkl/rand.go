@@ -72,6 +72,35 @@ func RandChoice[T any](a []T) T {
 	return a[RandIntn(len(a))]
 }
 
+// RandIndex gets a pseudo-random index into a, with probability proportional
+// to the result of a weighting function. It panics if f returns a negative
+// weight, or if no element of a has positive weight.
+func RandIndex[T any](a []T, f func(T) int) int {
+	weights := make([]int, len(a))
+	n := 0
+	for i, t := range a {
+		w := f(t)
+		if w < 0 {
+			panic("invalid negative weight")
+		}
+		weights[i] = w
+		n += w
+	}
+	if n <= 0 {
+		panic("no valid weights")
+	}
+
+	sample := RandIntn(n)
+	for i, w := range weights {
+		if sample < w {
+			return i
+		}
+		sample -= w
+	}
+
+	panic("invalid state") // Should be impossible.
+}
+
 // RandSelect returns a pseudo-random element of a for which f returns true. It
 // panics if a is empty or if f returns false for all elements of a.
 func RandSelect[T any](a []T, f func(T) bool) T {

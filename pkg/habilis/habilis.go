@@ -66,6 +66,22 @@ func (s *Skin) Roll(bonus Stone) int {
 	return hjkl.RandRange(0, core) + s.Count(bonus)
 }
 
+// Hurt removes a pseudo-random Stone from the Skin. It panics if there is no
+// Stone to remove.
+func (s *Skin) Hurt() {
+	index := hjkl.RandIndex(s.Circles, func(c Circle) int { return c.Count })
+	s.Circles[index].Count--
+}
+
+// Heal restores a psueod-random missing Stone to the Skin. It panics if there
+// is no missing Stone to restore.
+func (s *Skin) Heal() {
+	index := hjkl.RandIndex(s.Circles, func(c Circle) int {
+		return c.MaxCount - c.Count
+	})
+	s.Circles[index].Count--
+}
+
 // OnCollide is currently a noop.
 func (s *Skin) OnCollide(m *hjkl.Mob[Skin], t *hjkl.Tile[Skin]) {
 }
