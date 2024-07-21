@@ -62,15 +62,14 @@ func NewGame() *Game {
 	)
 	hjkl.PlaceMob(hero, hjkl.RandSelect(tiles, open))
 
-	prey := habilis.NewSkinMob(
-		"Mammoth",
-		hjkl.Ch('M'),
-		habilis.NewCircle("Core", habilis.StoneCore, 9),
-		habilis.NewCircle("Tusks", habilis.StoneMelee, 1),
-		habilis.NewCircle("Tough", habilis.StoneArm, 1),
+	hjkl.PlaceMob(
+		habilis.NewBestiaryMob("Mammoth"),
+		hjkl.RandSelect(tiles, open),
 	)
-	hjkl.PlaceMob(prey, hjkl.RandSelect(tiles, open))
-
+	hjkl.PlaceMob(
+		habilis.NewBestiaryMob("Sabertooth"),
+		hjkl.RandSelect(tiles, open),
+	)
 	return &Game{hero, tiles}
 }
 

@@ -13,6 +13,7 @@ const (
 	StoneEvs
 	StoneDmg
 	StoneArm
+	StoneMisc
 
 	StoneAny  Stone = 0
 	StoneNone Stone = ^StoneAny
@@ -28,6 +29,7 @@ type Circle struct {
 	MaxCount int
 }
 
+// NewCircle creates a Circle.
 func NewCircle(name string, stone Stone, count int) Circle {
 	return Circle{name, stone, count, count}
 }
