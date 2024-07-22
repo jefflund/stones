@@ -40,8 +40,8 @@ func TestWithWindow(t *testing.T) {
 
 func TestDisplayTiles(t *testing.T) {
 	c := &MockCanvas{}
-	m := NewMob[any](Ch('@'), nil)
-	tiles := []*Tile[any]{
+	m := NewMob(Ch('@'))
+	tiles := []*Tile{
 		{Face: Ch('#'), Offset: Vec(0, 1)},
 		{Face: Ch('.'), Offset: Vec(2, 3)},
 		{Face: Ch('.'), Offset: Vec(4, 5), Occupant: m},

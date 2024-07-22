@@ -33,13 +33,13 @@ var Tree = []hjkl.Glyph{
 }
 
 type Game struct {
-	Hero  *hjkl.Mob[habilis.Skin]
-	Tiles []*hjkl.Tile[habilis.Skin]
+	Hero  *hjkl.Mob
+	Tiles []*hjkl.Tile
 }
 
 func NewGame() *Game {
-	tiles := hjkl.GenTileGrid(60, 22, func(o hjkl.Vector) *hjkl.Tile[habilis.Skin] {
-		t := hjkl.NewTile[habilis.Skin](o)
+	tiles := hjkl.GenTileGrid(60, 22, func(o hjkl.Vector) *hjkl.Tile {
+		t := hjkl.NewTile(o)
 		if hjkl.RandChance(.1) {
 			t.Pass = false
 			t.Face = hjkl.RandChoice(Tree)
@@ -48,18 +48,21 @@ func NewGame() *Game {
 		}
 		return t
 	})
-	open := func(t *hjkl.Tile[habilis.Skin]) bool {
+	open := func(t *hjkl.Tile) bool {
 		return t.Pass && t.Occupant == nil
 	}
 
-	hero := habilis.NewSkinMob(
-		"Grog",
-		hjkl.Ch('@'),
-		habilis.NewCircle("Core", habilis.StoneCore, 3),
-		habilis.NewCircle("Rogok", habilis.StoneDmg, 1),
-		habilis.NewCircle("Warrior", habilis.StoneMelee, 1),
-		habilis.NewCircle("Tough", habilis.StoneArm, 1),
-	)
+	hero := hjkl.NewMob(hjkl.Ch('@'))
+	hero.AddComponent(&habilis.Skin{
+		Name: "Grog",
+		Circles: []habilis.Circle{
+			habilis.NewCircle("Core", habilis.StoneCore, 3),
+			habilis.NewCircle("Rogok", habilis.StoneDmg, 1),
+			habilis.NewCircle("Warrior", habilis.StoneMelee, 1),
+			habilis.NewCircle("Tough", habilis.StoneArm, 1),
+		},
+	})
+
 	hjkl.PlaceMob(hero, hjkl.RandSelect(tiles, open))
 
 	hjkl.PlaceMob(
@@ -88,17 +91,11 @@ func (g *Game) Update(ks []hjkl.Key) error {
 }
 
 func (g *Game) Status() string {
+	s := habilis.GetSkin(g.Hero)
 	lines := []string{
-		g.Hero.Data.Name,
-		fmt.Sprintf("Stones: %d", g.Hero.Data.Count(habilis.StoneAny)),
+		s.Name,
+		fmt.Sprintf("Stones: %d", s.Count(habilis.StoneAny)),
 		fmt.Sprintf("Pos: %v", g.Hero.Pos.Offset),
-	}
-	if g.Hero.Data.Mark != nil {
-		lines = append(lines, []string{
-			"",
-			g.Hero.Data.Mark.Data.Name,
-			fmt.Sprintf("Stones: %d", g.Hero.Data.Mark.Data.Count(habilis.StoneAny)),
-		}...)
 	}
 	return strings.Join(lines, "\n")
 }

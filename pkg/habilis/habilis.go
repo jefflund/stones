@@ -38,17 +38,35 @@ func NewCircle(name string, stone Stone, count int) Circle {
 type Skin struct {
 	Name    string
 	Circles []Circle
-
-	Mark *hjkl.Mob[Skin]
 }
 
-// NewSkinMob creates a Mob[Skin].
-func NewSkinMob(name string, face hjkl.Glyph, circles ...Circle) *hjkl.Mob[Skin] {
-	s := Skin{name, circles, nil}
-	m := hjkl.NewMob(face, s)
-	m.OnCollide = OnCollide
-	m.OnBump = OnBump
-	return m
+type SkinQuery struct {
+	Response *Skin
+}
+
+func GetSkin(m *hjkl.Mob) *Skin {
+	q := SkinQuery{}
+	m.Handle(&q)
+	return q.Response
+}
+
+func (s *Skin) Process(m *hjkl.Mob, v hjkl.Event) {
+	switch v := v.(type) {
+	case *hjkl.CollideEvent:
+		s.Hurt()
+	case *hjkl.BumpEvent:
+		bs := GetSkin(v.Bumped)
+		core := s.Roll(StoneNone) - bs.Roll(StoneNone)
+		hit := core + s.Count(StoneHit) - bs.Count(StoneEvs)
+		if hit > 0 {
+			dmg := core + s.Count(StoneDmg) - bs.Count(StoneArm)
+			for x := hjkl.Min(0, dmg); x < dmg; x++ {
+				bs.Hurt()
+			}
+		}
+	case *SkinQuery:
+		v.Response = s
+	}
 }
 
 // Count gets the total count for a Stone type.
@@ -81,23 +99,5 @@ func (s *Skin) Heal() {
 	index := hjkl.RandIndex(s.Circles, func(c Circle) int {
 		return c.MaxCount - c.Count
 	})
-	s.Circles[index].Count--
-}
-
-// OnCollide is currently a noop.
-func OnCollide(m *hjkl.Mob[Skin], t *hjkl.Tile[Skin]) {
-	m.Data.Hurt()
-}
-
-// OnBump is currently a noop.
-func OnBump(m, b *hjkl.Mob[Skin]) {
-	m.Data.Mark = b
-	core := m.Data.Roll(StoneNone) - b.Data.Roll(StoneNone)
-	hit := core + m.Data.Count(StoneHit) - b.Data.Count(StoneEvs)
-	if hit > 0 {
-		dmg := core + m.Data.Count(StoneDmg) - b.Data.Count(StoneArm)
-		for i := hjkl.Min(0, dmg); i < dmg; i++ {
-			b.Data.Hurt()
-		}
-	}
+	s.Circles[index].Count++
 }

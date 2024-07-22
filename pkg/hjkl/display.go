@@ -20,7 +20,7 @@ func (w Window) Blit(v Vector, g Glyph) {
 }
 
 // DisplayTiles Blits each Tile face to a Canvas.
-func DisplayTiles[T any](c Canvas, tiles []*Tile[T]) {
+func DisplayTiles(c Canvas, tiles []*Tile) {
 	for _, t := range tiles {
 		if t.Occupant != nil {
 			c.Blit(t.Offset, t.Occupant.Face)

@@ -4,12 +4,10 @@ import (
 	"testing"
 )
 
-type TestData struct{}
-
 func TestMob_Move(t *testing.T) {
-	mob := NewMob(Ch('@'), TestData{})
-	src := NewTile[TestData](Vec(0, 0))
-	dst := NewTile[TestData](Vec(1, 1))
+	mob := NewMob(Ch('@'))
+	src := NewTile(Vec(0, 0))
+	dst := NewTile(Vec(1, 1))
 
 	mob.Pos = src
 	src.Adjacent[Vec(1, 1)] = dst
@@ -29,25 +27,25 @@ func TestMob_Move(t *testing.T) {
 }
 
 func TestMob_CollideTriggerMove(t *testing.T) {
-	mob := NewMob(Ch('@'), TestData{})
-	src := NewTile[TestData](Vec(0, 0))
-	dst := NewTile[TestData](Vec(1, 1))
+	mob := NewMob(Ch('@'))
+	src := NewTile(Vec(0, 0))
+	dst := NewTile(Vec(1, 1))
 
-	handlerCalled := false
+	collideSent := false
 	mob.Pos = src
-	mob.OnCollide = func(m *Mob[TestData], t *Tile[TestData]) {
-		if m == mob && t == dst {
-			handlerCalled = true
+	mob.AddComponent(ComponentFunc[CollideEvent](func(m *Mob, v *CollideEvent) {
+		if m == mob && v.Obstacle == dst {
+			collideSent = true
 		}
-	}
+	}))
 	src.Adjacent[Vec(1, 1)] = dst
 	src.Occupant = mob
 	dst.Pass = false
 
 	mob.Move(Vec(1, 1))
 
-	if !handlerCalled {
-		t.Error("Move failed to call OnCollide handler")
+	if !collideSent {
+		t.Error("Move failed to send CollideEvent")
 	}
 	if src.Occupant != mob {
 		t.Error("Move erroneously updated src.Occupant on collision")
@@ -61,26 +59,26 @@ func TestMob_CollideTriggerMove(t *testing.T) {
 }
 
 func TestMob_Bump(t *testing.T) {
-	mob := NewMob(Ch('@'), TestData{})
-	bumped := NewMob(Ch('D'), TestData{})
-	src := NewTile[TestData](Vec(0, 0))
-	dst := NewTile[TestData](Vec(1, 1))
+	mob := NewMob(Ch('@'))
+	bumped := NewMob(Ch('D'))
+	src := NewTile(Vec(0, 0))
+	dst := NewTile(Vec(1, 1))
 
-	handlerCalled := false
+	bumpSent := false
 	mob.Pos = src
-	mob.OnBump = func(m, b *Mob[TestData]) {
-		if m == mob && b == bumped {
-			handlerCalled = true
+	mob.AddComponent(ComponentFunc[BumpEvent](func(m *Mob, v *BumpEvent) {
+		if m == mob && v.Bumped == bumped {
+			bumpSent = true
 		}
-	}
+	}))
 	src.Adjacent[Vec(1, 1)] = dst
 	src.Occupant = mob
 	dst.Occupant = bumped
 
 	mob.Move(Vec(1, 1))
 
-	if !handlerCalled {
-		t.Error("Move failed to call OnBump handler")
+	if !bumpSent {
+		t.Error("Move failed to send BumpEvent")
 	}
 	if src.Occupant != mob {
 		t.Error("Move erroneously updated src.Occupant on bump")
@@ -94,8 +92,8 @@ func TestMob_Bump(t *testing.T) {
 }
 
 func TestPlaceMob(t *testing.T) {
-	mob := NewMob(Ch('@'), TestData{})
-	dst := NewTile[TestData](Vec(1, 1))
+	mob := NewMob(Ch('@'))
+	dst := NewTile(Vec(1, 1))
 	PlaceMob(mob, dst)
 	if mob.Pos != dst {
 		t.Error("PlaceMob failed to set mob.Pos")

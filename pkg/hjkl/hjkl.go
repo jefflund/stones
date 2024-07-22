@@ -102,32 +102,58 @@ func Run(g Game, opts ...RunOption) error {
 	}
 }
 
-// Mob is a game object which occupies Tile.
-type Mob[T any] struct {
-	Face Glyph
-	Pos  *Tile[T]
+type Event any
 
-	Data T
-
-	OnCollide func(*Mob[T], *Tile[T])
-	OnBump    func(*Mob[T], *Mob[T])
+type CollideEvent struct {
+	Obstacle *Tile
 }
 
-// NewMob constructs a Mob with the given Glyph face.
-func NewMob[T any](face Glyph, data T) *Mob[T] {
-	return &Mob[T]{
-		Face: face,
-		Data: data,
+type BumpEvent struct {
+	Bumped *Mob
+}
+
+type Component interface {
+	Process(*Mob, Event)
+}
+
+type ComponentFunc[T Event] func(m *Mob, v *T)
+
+func (c ComponentFunc[T]) Process(m *Mob, v Event) {
+	if v, ok := v.(*T); ok {
+		c(m, v)
 	}
 }
 
+// Mob is a game object which occupies Tile.
+type Mob struct {
+	Face Glyph
+	Pos  *Tile
+
+	Components []Component
+}
+
+// NewMob constructs a Mob with the given Glyph face.
+func NewMob(face Glyph) *Mob {
+	return &Mob{Face: face}
+}
+
+func (m *Mob) Handle(v Event) {
+	for _, c := range m.Components {
+		c.Process(m, v)
+	}
+}
+
+func (m *Mob) AddComponent(c Component) {
+	m.Components = append(m.Components, c)
+}
+
 // Move attempts to move the Mob to a new Tile.
-func (m *Mob[T]) Move(delta Vector) {
+func (m *Mob) Move(delta Vector) {
 	dst := m.Pos.Adjacent[delta]
 	if !dst.Pass {
-		m.OnCollide(m, dst)
+		m.Handle(&CollideEvent{dst})
 	} else if dst.Occupant != nil {
-		m.OnBump(m, dst.Occupant)
+		m.Handle(&BumpEvent{dst.Occupant})
 	} else {
 		m.Pos.Occupant = nil
 		dst.Occupant = m
@@ -136,27 +162,27 @@ func (m *Mob[T]) Move(delta Vector) {
 }
 
 // Tile is a square in the game map.
-type Tile[T any] struct {
+type Tile struct {
 	Face     Glyph
 	Pass     bool
-	Occupant *Mob[T]
+	Occupant *Mob
 
 	Offset   Vector
-	Adjacent map[Vector]*Tile[T]
+	Adjacent map[Vector]*Tile
 }
 
 // NewTile creates a new Tile with the given Vector offset.
-func NewTile[T any](offset Vector) *Tile[T] {
-	return &Tile[T]{
+func NewTile(offset Vector) *Tile {
+	return &Tile{
 		Face:     Ch('.'),
 		Pass:     true,
 		Offset:   offset,
-		Adjacent: make(map[Vector]*Tile[T]),
+		Adjacent: make(map[Vector]*Tile),
 	}
 }
 
 // PlaceMob places a Mob on a Tile.
-func PlaceMob[T any](m *Mob[T], t *Tile[T]) {
+func PlaceMob(m *Mob, t *Tile) {
 	m.Pos = t
 	t.Occupant = m
 }

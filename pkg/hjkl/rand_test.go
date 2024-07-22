@@ -182,18 +182,18 @@ func TestRandIndex(t *testing.T) {
 }
 
 func TestRandSelect(t *testing.T) {
-	tiles := GenTileGrid(10, 10, func(o Vector) *Tile[TestData] {
-		t := NewTile[TestData](o)
+	tiles := GenTileGrid(10, 10, func(o Vector) *Tile {
+		t := NewTile(o)
 		if RandChance(.1) {
 			t.Pass = false
 		}
 		return t
 	})
-	GenFence(tiles, func(t *Tile[TestData]) {
+	GenFence(tiles, func(t *Tile) {
 		t.Pass = false
 	})
-	index := func(t *Tile[TestData]) int { return t.Offset.X + 10*t.Offset.Y }
-	pass := func(t *Tile[TestData]) bool { return t.Pass }
+	index := func(t *Tile) int { return t.Offset.X + 10*t.Offset.Y }
+	pass := func(t *Tile) bool { return t.Pass }
 	exp := make([]int, 100)
 	for _, t := range tiles {
 		if pass(t) {
@@ -206,14 +206,14 @@ func TestRandSelect(t *testing.T) {
 }
 
 func BenchmarkRandSelect_Easy(b *testing.B) {
-	tiles := GenTileGrid(100, 100, func(o Vector) *Tile[TestData] {
-		t := NewTile[TestData](o)
+	tiles := GenTileGrid(100, 100, func(o Vector) *Tile {
+		t := NewTile(o)
 		if RandChance(.1) {
 			t.Pass = false
 		}
 		return t
 	})
-	pass := func(t *Tile[TestData]) bool { return t.Pass }
+	pass := func(t *Tile) bool { return t.Pass }
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		RandSelect(tiles, pass)
@@ -221,13 +221,13 @@ func BenchmarkRandSelect_Easy(b *testing.B) {
 }
 
 func BenchmarkRandSelect_Hard(b *testing.B) {
-	tiles := GenTileGrid(1000, 1000, func(o Vector) *Tile[TestData] {
-		t := NewTile[TestData](o)
+	tiles := GenTileGrid(1000, 1000, func(o Vector) *Tile {
+		t := NewTile(o)
 		t.Pass = false
 		return t
 	})
 	tiles[0].Pass = true
-	pass := func(t *Tile[TestData]) bool { return t.Pass }
+	pass := func(t *Tile) bool { return t.Pass }
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		RandSelect(tiles, pass)

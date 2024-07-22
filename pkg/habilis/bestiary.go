@@ -28,8 +28,9 @@ var Bestiary = map[string]BestiaryEntry{
 	},
 }
 
-// NewBestiaryMob creates a Mob[Skin] from a named BestiaryEntry.
-func NewBestiaryMob(name string) *hjkl.Mob[Skin] {
-	e := Bestiary[name]
-	return NewSkinMob(name, e.Face, e.Circles...)
+func NewBestiaryMob(name string) *hjkl.Mob {
+	entry := Bestiary[name]
+	m := hjkl.NewMob(entry.Face)
+	m.AddComponent(&Skin{name, entry.Circles})
+	return m
 }

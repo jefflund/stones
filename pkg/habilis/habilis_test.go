@@ -90,25 +90,33 @@ func TestSkin_RollNone(t *testing.T) {
 }
 
 func TestSkin_Hurt(t *testing.T) {
-	m := NewBestiaryMob("Sabertooth")
-	n := m.Data.Count(StoneAny)
+	s := &Skin{"Sabertooth", []Circle{
+		NewCircle("Core", StoneCore, 6),
+		NewCircle("Run", StoneMisc, 1),
+		NewCircle("Bite", StoneMelee, 2),
+	}}
+	n := s.Count(StoneAny)
 	for i := 1; i <= n; i++ {
-		m.Data.Hurt()
-		if m.Data.Count(StoneAny) != n-i {
+		s.Hurt()
+		if s.Count(StoneAny) != n-i {
 			t.Fatal("Hurt failed to remove Stone")
 		}
 	}
 }
 
 func TestSkin_Heal(t *testing.T) {
-	m := NewBestiaryMob("Sabertooth")
-	n := m.Data.Count(StoneAny)
-	for i := range m.Data.Circles {
-		m.Data.Circles[i].Count = 0
+	s := &Skin{"Sabertooth", []Circle{
+		NewCircle("Core", StoneCore, 6),
+		NewCircle("Run", StoneMisc, 1),
+		NewCircle("Bite", StoneMelee, 2),
+	}}
+	n := s.Count(StoneAny)
+	for i := range s.Circles {
+		s.Circles[i].Count = 0
 	}
 	for i := 1; i <= n; i++ {
-		m.Data.Heal()
-		if m.Data.Count(StoneAny) != i {
+		s.Heal()
+		if s.Count(StoneAny) != i {
 			t.Fatal("Heal failed to restore Stone")
 		}
 	}
