@@ -102,22 +102,28 @@ func Run(g Game, opts ...RunOption) error {
 	}
 }
 
+// Event is a message handled by Mob.
 type Event any
 
+// CollideEvent is an Event arising from a Mob coliided with a Tile obstacle.
 type CollideEvent struct {
 	Obstacle *Tile
 }
 
+// BumpeEvent is an Event arising from a Mob bumping another Mob.
 type BumpEvent struct {
 	Bumped *Mob
 }
 
+// Component processes Event for a Mob.
 type Component interface {
 	Process(*Mob, Event)
 }
 
+// ComponentFunc is a function which implements Component.
 type ComponentFunc[T Event] func(m *Mob, v *T)
 
+// Process calls the function if the Event has the correct type.
 func (c ComponentFunc[T]) Process(m *Mob, v Event) {
 	if v, ok := v.(*T); ok {
 		c(m, v)
@@ -137,12 +143,14 @@ func NewMob(face Glyph) *Mob {
 	return &Mob{Face: face}
 }
 
+// Handle has each constituent Component process the Event for the Mob.
 func (m *Mob) Handle(v Event) {
 	for _, c := range m.Components {
 		c.Process(m, v)
 	}
 }
 
+// AddComponent appends a Component to the Mob.
 func (m *Mob) AddComponent(c Component) {
 	m.Components = append(m.Components, c)
 }
