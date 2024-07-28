@@ -40,16 +40,19 @@ type Skin struct {
 	Circles []Circle
 }
 
+// SkinQuery is an Event requesting the Skin of a Mob.
 type SkinQuery struct {
 	Response *Skin
 }
 
+// GetSkin sends a SkinQuery to a Mob and returns the response.
 func GetSkin(m *hjkl.Mob) *Skin {
 	q := SkinQuery{}
 	m.Handle(&q)
 	return q.Response
 }
 
+// Process implements Component for Skin.
 func (s *Skin) Process(m *hjkl.Mob, v hjkl.Event) {
 	switch v := v.(type) {
 	case *hjkl.CollideEvent:

@@ -28,6 +28,8 @@ var Bestiary = map[string]BestiaryEntry{
 	},
 }
 
+// NewBestiaryMob looks up a name from Bestiary, and creates a Mob using the
+// data from the named BestiaryEntry.
 func NewBestiaryMob(name string) *hjkl.Mob {
 	entry := Bestiary[name]
 	m := hjkl.NewMob(entry.Face)
