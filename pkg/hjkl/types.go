@@ -2,16 +2,6 @@ package hjkl
 
 import "math"
 
-// Key represents a single keypress.
-type Key rune
-
-// Key constants which normally require escapes.
-const (
-	KeyEsc   Key = 0x1B
-	KeyEnter Key = 0x0D
-	KeyCtrlC Key = 0x03
-)
-
 // Vector is a two-dimension int vector.
 type Vector struct {
 	X, Y int
@@ -62,6 +52,27 @@ var dirs8 = []Vector{
 	{1, -1},
 	{1, 0},
 	{1, 1},
+}
+
+// Key represents a single keypress.
+type Key rune
+
+// Key constants which normally require escapes.
+const (
+	KeyEsc   Key = 0x1B
+	KeyEnter Key = 0x0D
+	KeyCtrlC Key = 0x03
+)
+
+var VIKeyMap = map[Key]Vector{
+	'h': Vec(-1, 0),
+	'j': Vec(0, 1),
+	'k': Vec(0, -1),
+	'l': Vec(1, 0),
+	'n': Vec(1, 1),
+	'b': Vec(-1, 1),
+	'u': Vec(1, -1),
+	'y': Vec(-1, -1),
 }
 
 // Color describes the color of a Glyph as a uint8 ANSI 256 color code.

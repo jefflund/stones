@@ -8,17 +8,6 @@ import (
 	"github.com/jefflund/stones/pkg/hjkl"
 )
 
-var KeyMap = map[hjkl.Key]hjkl.Vector{
-	'h': hjkl.Vec(-1, 0),
-	'j': hjkl.Vec(0, 1),
-	'k': hjkl.Vec(0, -1),
-	'l': hjkl.Vec(1, 0),
-	'n': hjkl.Vec(1, 1),
-	'b': hjkl.Vec(-1, 1),
-	'u': hjkl.Vec(1, -1),
-	'y': hjkl.Vec(-1, -1),
-}
-
 var Ground = []hjkl.Glyph{
 	{Ch: '.', Fg: hjkl.ColorGreen},
 	{Ch: '.', Fg: hjkl.ColorLightGreen},
@@ -39,16 +28,7 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	tiles := hjkl.GenTileGrid(60, 22, func(o hjkl.Vector) *hjkl.Tile {
-		t := hjkl.NewTile(o)
-		if hjkl.RandChance(.1) {
-			t.Pass = false
-			t.Face = hjkl.RandChoice(Tree)
-		} else {
-			t.Face = hjkl.RandChoice(Ground)
-		}
-		return t
-	})
+	tiles := habilis.GenTileGrid(60, 22)
 	open := func(t *hjkl.Tile) bool {
 		return t.Pass && t.Occupant == nil
 	}
@@ -84,7 +64,7 @@ func (g *Game) Update(ks []hjkl.Key) error {
 		if k == 'q' || k == hjkl.KeyEsc {
 			return hjkl.Termination
 		}
-		if delta, ok := KeyMap[k]; ok {
+		if delta, ok := hjkl.VIKeyMap[k]; ok {
 			if g.Hero.Pos.Adjacent[delta] != nil {
 				g.Hero.Move(delta)
 			}
