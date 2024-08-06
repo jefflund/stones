@@ -34,6 +34,7 @@ var Tree = []hjkl.Glyph{
 
 type Game struct {
 	Hero  *hjkl.Mob
+	Log   *hjkl.LogWidget
 	Tiles []*hjkl.Tile
 }
 
@@ -52,6 +53,8 @@ func NewGame() *Game {
 		return t.Pass && t.Occupant == nil
 	}
 
+	log := &hjkl.LogWidget{MaxLen: 5}
+
 	hero := hjkl.NewMob(hjkl.Ch('@'))
 	hero.AddComponent(&habilis.Skin{
 		Name: "Grog",
@@ -62,7 +65,7 @@ func NewGame() *Game {
 			habilis.NewCircle("Tough", habilis.StoneArm, 1),
 		},
 	})
-
+	hero.AddComponent(log)
 	hjkl.PlaceMob(hero, hjkl.RandSelect(tiles, open))
 
 	hjkl.PlaceMob(
@@ -73,7 +76,7 @@ func NewGame() *Game {
 		habilis.NewBestiaryMob("Sabertooth"),
 		hjkl.RandSelect(tiles, open),
 	)
-	return &Game{hero, tiles}
+	return &Game{hero, log, tiles}
 }
 
 func (g *Game) Update(ks []hjkl.Key) error {
@@ -108,6 +111,7 @@ func (g *Game) Draw(c hjkl.Canvas) {
 	hjkl.WithWindow(c, hjkl.Vec(61, 1), hjkl.Vec(18, 22), func(c hjkl.Canvas) {
 		hjkl.DisplayString(c, g.Status())
 	})
+	hjkl.WithWindow(c, hjkl.Vec(0, 24), hjkl.Vec(80, g.Log.MaxLen), g.Log.Display)
 }
 
 func main() {

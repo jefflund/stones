@@ -58,3 +58,29 @@ func DisplayString(c Canvas, s string) {
 		}
 	}
 }
+
+type LogMessage struct {
+	Message string
+}
+
+type LogWidget struct {
+	MaxLen  int
+	History []string
+}
+
+func (w *LogWidget) Process(m *Mob, v Event) {
+	if v, ok := v.(*LogMessage); ok {
+		w.History = append(w.History, v.Message)
+	}
+	if len(w.History) > w.MaxLen {
+		w.History = w.History[1:]
+	}
+}
+
+func (w *LogWidget) Display(c Canvas) {
+	for y, s := range w.History {
+		for x, ch := range s {
+			c.Blit(Vec(x, y), Ch(ch))
+		}
+	}
+}

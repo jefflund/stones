@@ -58,6 +58,7 @@ func (s *Skin) Process(m *hjkl.Mob, v hjkl.Event) {
 	case *hjkl.CollideEvent:
 		s.Hurt()
 	case *hjkl.BumpEvent:
+		m.Handle(hjkl.Log("%s <bump> %o", m, v.Bumped))
 		bs := GetSkin(v.Bumped)
 		core := s.Roll(StoneNone) - bs.Roll(StoneNone)
 		hit := core + s.Count(StoneHit) - bs.Count(StoneEvs)

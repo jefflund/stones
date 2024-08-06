@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-func Log(s string, args ...any) string {
+func Log(s string, args ...any) *LogMessage {
 	var subject any
 	var subjectNP string
 
@@ -54,7 +54,7 @@ func Log(s string, args ...any) string {
 		s = fmt.Sprintf("%s%%!(EXTRA %s)", s, extra)
 	}
 
-	return s
+	return &LogMessage{s}
 }
 
 var (
