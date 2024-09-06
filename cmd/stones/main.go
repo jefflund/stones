@@ -1,62 +1,35 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/jefflund/stones/pkg/habilis"
 	"github.com/jefflund/stones/pkg/hjkl"
 )
 
-var Ground = []hjkl.Glyph{
-	{Ch: '.', Fg: hjkl.ColorGreen},
-	{Ch: '.', Fg: hjkl.ColorLightGreen},
-	{Ch: '.', Fg: hjkl.ColorLightGreen},
-}
-
-var Tree = []hjkl.Glyph{
-	{Ch: '%', Fg: hjkl.ColorGreen},
-	{Ch: '%', Fg: hjkl.ColorLightGreen},
-	{Ch: '%', Fg: hjkl.ColorYellow},
-	{Ch: '%', Fg: hjkl.ColorLightYellow},
-}
-
 type Game struct {
 	Hero  *hjkl.Mob
-	Log   *hjkl.LogWidget
 	Tiles []*hjkl.Tile
 }
 
 func NewGame() *Game {
-	tiles := habilis.GenTileGrid(60, 22)
+	tiles := hjkl.GenTileGrid(60, 22, func(o hjkl.Vector) *hjkl.Tile {
+		t := hjkl.NewTile(o)
+		if hjkl.RandChance(0.1) {
+			t.Face = hjkl.Glyph{Ch: '%', Fg: hjkl.ColorGreen}
+			t.Pass = false
+		}
+		return t
+	})
 	open := func(t *hjkl.Tile) bool {
 		return t.Pass && t.Occupant == nil
 	}
-
-	log := &hjkl.LogWidget{MaxLen: 5}
+	hjkl.GenFence(tiles, func(t *hjkl.Tile) {
+		t.Face = hjkl.Ch('#')
+		t.Pass = false
+	})
 
 	hero := hjkl.NewMob(hjkl.Ch('@'))
-	hero.AddComponent(&habilis.Skin{
-		Name: "Grog",
-		Circles: []habilis.Circle{
-			habilis.NewCircle("Core", habilis.StoneCore, 3),
-			habilis.NewCircle("Rogok", habilis.StoneDmg, 1),
-			habilis.NewCircle("Warrior", habilis.StoneMelee, 1),
-			habilis.NewCircle("Tough", habilis.StoneArm, 1),
-		},
-	})
-	hero.AddComponent(log)
 	hjkl.PlaceMob(hero, hjkl.RandSelect(tiles, open))
 
-	hjkl.PlaceMob(
-		habilis.NewBestiaryMob("Mammoth"),
-		hjkl.RandSelect(tiles, open),
-	)
-	hjkl.PlaceMob(
-		habilis.NewBestiaryMob("Sabertooth"),
-		hjkl.RandSelect(tiles, open),
-	)
-	return &Game{hero, log, tiles}
+	return &Game{hero, tiles}
 }
 
 func (g *Game) Update(ks []hjkl.Key) error {
@@ -73,25 +46,13 @@ func (g *Game) Update(ks []hjkl.Key) error {
 	return nil
 }
 
-func (g *Game) Status() string {
-	s := habilis.GetSkin(g.Hero)
-	lines := []string{
-		s.Name,
-		fmt.Sprintf("Stones: %d", s.Count(habilis.StoneAny)),
-		fmt.Sprintf("Pos: %v", g.Hero.Pos.Offset),
-	}
-	return strings.Join(lines, "\n")
-}
-
 func (g *Game) Draw(c hjkl.Canvas) {
-	hjkl.DisplayBorder(c, 80, 24)
-	hjkl.WithWindow(c, hjkl.Vec(1, 1), hjkl.Vec(60, 22), func(c hjkl.Canvas) {
-		hjkl.DisplayTiles(c, g.Tiles)
-	})
-	hjkl.WithWindow(c, hjkl.Vec(61, 1), hjkl.Vec(18, 22), func(c hjkl.Canvas) {
-		hjkl.DisplayString(c, g.Status())
-	})
-	hjkl.WithWindow(c, hjkl.Vec(0, 24), hjkl.Vec(80, g.Log.MaxLen), g.Log.Display)
+	for _, t := range g.Tiles {
+		c.Blit(t.Offset, t.Face)
+		if t.Occupant != nil {
+			c.Blit(t.Offset, t.Occupant.Face)
+		}
+	}
 }
 
 func main() {
