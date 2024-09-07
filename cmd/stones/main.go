@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/jefflund/stones/pkg/hjkl"
+	"github.com/jefflund/stones/pkg/hjkl/math/rand"
 )
 
 type Game struct {
@@ -12,7 +13,7 @@ type Game struct {
 func NewGame() *Game {
 	tiles := hjkl.GenTileGrid(60, 22, func(o hjkl.Vector) *hjkl.Tile {
 		t := hjkl.NewTile(o)
-		if hjkl.RandChance(0.1) {
+		if rand.Chance(0.1) {
 			t.Face = hjkl.Glyph{Ch: '%', Fg: hjkl.ColorGreen}
 			t.Pass = false
 		}
@@ -27,7 +28,7 @@ func NewGame() *Game {
 	})
 
 	hero := hjkl.NewMob(hjkl.Ch('@'))
-	hjkl.PlaceMob(hero, hjkl.RandSelect(tiles, open))
+	hjkl.PlaceMob(hero, rand.Select(tiles, open))
 
 	return &Game{hero, tiles}
 }

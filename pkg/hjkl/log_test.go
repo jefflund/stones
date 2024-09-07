@@ -46,7 +46,7 @@ func TestLog(t *testing.T) {
 		{"%s %v %o.", []any{I, "hit", mammoth}, "I hit the mammoth."},
 	}
 	for _, c := range cases {
-		if actual := Log(c.Fmt, c.Args...).Message; actual != c.Expected {
+		if actual := Log(c.Fmt, c.Args...); actual != c.Expected {
 			t.Errorf("Got: \"%s\", Wanted: \"%s\"", actual, c.Expected)
 		}
 	}

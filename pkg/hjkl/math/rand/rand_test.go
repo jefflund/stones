@@ -1,4 +1,4 @@
-package hjkl
+package rand
 
 import (
 	"fmt"
@@ -66,7 +66,7 @@ func RunX2TestCases(t *testing.T, name string, exp []int, f func() int) {
 	}
 	for _, seed := range Seeds {
 		t.Run(fmt.Sprintf("%s (seed: %x)", name, seed), func(t *testing.T) {
-			RandSeed(seed)
+			Seed(seed)
 			obs := make([]int, len(exp))
 			for i := 0; i < n; i++ {
 				obs[f()]++
@@ -78,67 +78,67 @@ func RunX2TestCases(t *testing.T, name string, exp []int, f func() int) {
 	}
 }
 
-func TestRandIntn_10(t *testing.T) {
+func TestIntn_10(t *testing.T) {
 	exp := make([]int, 10)
 	for i := 0; i < 10; i++ {
 		exp[i] = 100
 	}
-	RunX2TestCases(t, "RandIntn(10)", exp, func() int {
-		return RandIntn(10)
+	RunX2TestCases(t, "Intn(10)", exp, func() int {
+		return Intn(10)
 	})
 }
 
-func TestRandIntn_100(t *testing.T) {
+func TestIntn_100(t *testing.T) {
 	exp := make([]int, 100)
 	for i := 0; i < 100; i++ {
 		exp[i] = 100
 	}
-	RunX2TestCases(t, "RandIntn(100)", exp, func() int {
-		return RandIntn(100)
+	RunX2TestCases(t, "Intn(100)", exp, func() int {
+		return Intn(100)
 	})
 }
 
-func TestRandFloat64(t *testing.T) {
+func TestFloat64(t *testing.T) {
 	exp := make([]int, 100)
 	for i := 0; i < 100; i++ {
 		exp[i] = 100
 	}
-	RunX2TestCases(t, "RandFloat64", exp, func() int {
-		return int(RandFloat64() * 100)
+	RunX2TestCases(t, "Float64", exp, func() int {
+		return int(Float64() * 100)
 	})
 }
 
-func TestRandChoice(t *testing.T) {
+func TestChoice(t *testing.T) {
 	a := []rune{'a', 'b', 'c', 'd'}
 	index := map[rune]int{'a': 0, 'b': 1, 'c': 2, 'd': 3}
 	exp := []int{250, 250, 250, 250}
-	RunX2TestCases(t, "RandChoice", exp, func() int {
-		return index[RandChoice(a)]
+	RunX2TestCases(t, "Choice", exp, func() int {
+		return index[Choice(a)]
 	})
 }
 
-func TestRandRange_1D6(t *testing.T) {
+func TestRange_1D6(t *testing.T) {
 	exp := []int{0, 100, 100, 100, 100, 100, 100}
-	RunX2TestCases(t, "RandRange(1, 6)", exp, func() int {
-		return RandRange(1, 6)
+	RunX2TestCases(t, "Range(1, 6)", exp, func() int {
+		return Range(1, 6)
 	})
 }
 
-func TestRandRange_10_15(t *testing.T) {
+func TestRange_10_15(t *testing.T) {
 	exp := []int{100, 100, 100, 100, 100, 100}
-	RunX2TestCases(t, "RandRange(10, 15)", exp, func() int {
-		return RandRange(10, 15) - 10
+	RunX2TestCases(t, "Range(10, 15)", exp, func() int {
+		return Range(10, 15) - 10
 	})
 }
 
-func TestRandRange_5_5(t *testing.T) {
+func TestRange_5_5(t *testing.T) {
 	exp := []int{10}
-	RunX2TestCases(t, "RandRange(5, 5)", exp, func() int {
-		return RandRange(5, 5) - 5
+	RunX2TestCases(t, "Range(5, 5)", exp, func() int {
+		return Range(5, 5) - 5
 	})
 }
 
-func TestRandChance(t *testing.T) {
+func TestChance(t *testing.T) {
 	cases := []struct {
 		Exp []int
 		P   float64
@@ -152,10 +152,10 @@ func TestRandChance(t *testing.T) {
 		{[]int{0, 1000}, 1},
 	}
 	for _, c := range cases {
-		name := fmt.Sprintf("RandChance(%.2f)", c.P)
+		name := fmt.Sprintf("Chance(%.2f)", c.P)
 		t.Run(name, func(t *testing.T) {
 			RunX2TestCases(t, name, c.Exp, func() int {
-				if RandChance(c.P) {
+				if Chance(c.P) {
 					return 1
 				}
 				return 0
@@ -164,7 +164,7 @@ func TestRandChance(t *testing.T) {
 	}
 }
 
-func TestRandIndex(t *testing.T) {
+func TestIndex(t *testing.T) {
 	a := []rune{'a', 'b', 'c', 'd', 'e'}
 	w := map[rune]int{
 		'a': 1,
@@ -174,134 +174,125 @@ func TestRandIndex(t *testing.T) {
 		'e': 3,
 	}
 	exp := []int{100, 600, 200, 0, 300}
-	RunX2TestCases(t, "RandIndex", exp, func() int {
-		return RandIndex(a, func(r rune) int {
+	RunX2TestCases(t, "Index", exp, func() int {
+		return Index(a, func(r rune) int {
 			return w[r]
 		})
 	})
 }
 
-func TestRandSelect(t *testing.T) {
-	tiles := GenTileGrid(10, 10, func(o Vector) *Tile {
-		t := NewTile(o)
-		if RandChance(.1) {
-			t.Pass = false
-		}
-		return t
-	})
-	GenFence(tiles, func(t *Tile) {
-		t.Pass = false
-	})
-	index := func(t *Tile) int { return t.Offset.X + 10*t.Offset.Y }
-	pass := func(t *Tile) bool { return t.Pass }
+func TestSelect(t *testing.T) {
+	cands := make([]int, 100)
 	exp := make([]int, 100)
-	for _, t := range tiles {
-		if pass(t) {
-			exp[index(t)] = 100
+	for i := 0; i < 100; i++ {
+		cands[i] = i
+		if Chance(0.1) {
+			cands[i] *= -1
+		} else {
+			exp[i] = 100
 		}
 	}
-	RunX2TestCases(t, "RandSelect", exp, func() int {
-		return index(RandSelect(tiles, pass))
+	positive := func(x int) bool { return x >= 0 }
+	RunX2TestCases(t, "Select", exp, func() int {
+		return Select(cands, positive)
 	})
 }
 
-func BenchmarkRandSelect_Easy(b *testing.B) {
-	tiles := GenTileGrid(100, 100, func(o Vector) *Tile {
-		t := NewTile(o)
-		if RandChance(.1) {
-			t.Pass = false
+func BenchmarkSelect_Easy(b *testing.B) {
+	cands := make([]int, 100)
+	for i := range cands {
+		cands[i] = i
+		if Chance(0.1) {
+			cands[i] *= -1
 		}
-		return t
-	})
-	pass := func(t *Tile) bool { return t.Pass }
+	}
+	positive := func(x int) bool { return x >= 0 }
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		RandSelect(tiles, pass)
+		Select(cands, positive)
 	}
 }
 
-func BenchmarkRandSelect_Hard(b *testing.B) {
-	tiles := GenTileGrid(1000, 1000, func(o Vector) *Tile {
-		t := NewTile(o)
-		t.Pass = false
-		return t
-	})
-	tiles[0].Pass = true
-	pass := func(t *Tile) bool { return t.Pass }
+func BenchmarkSelect_Hard(b *testing.B) {
+	cands := make([]int, 1000000)
+	for i := range cands {
+		cands[i] = -i
+	}
+	positive := func(x int) bool { return x >= 0 }
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		RandSelect(tiles, pass)
+		Select(cands, positive)
 	}
 }
 
-func TestRandIntn_Zero(t *testing.T) {
+func TestIntn_Zero(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("RandIntn(0) failed to panic")
+			t.Error("Intn(0) failed to panic")
 		}
 	}()
-	RandIntn(0)
+	Intn(0)
 }
 
-func TestRandIntn_Neg(t *testing.T) {
+func TestIntn_Neg(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("RandIntn(-1) failed to panic")
+			t.Error("Intn(-1) failed to panic")
 		}
 	}()
-	RandIntn(-1)
+	Intn(-1)
 }
 
-func TestRandRange_Invert(t *testing.T) {
+func TestRange_Invert(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("RandRange failed to panic on b < a")
+			t.Error("Range failed to panic on b < a")
 		}
 	}()
-	RandRange(6, 5)
+	Range(6, 5)
 }
 
-func TestRandChoice_Empty(t *testing.T) {
+func TestChoice_Empty(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("RandChoice failed to panic on empty")
+			t.Error("Choice failed to panic on empty")
 		}
 	}()
-	RandChoice([]int{})
+	Choice([]int{})
 }
 
-func TestRandChance_LT0(t *testing.T) {
+func TestChance_LT0(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("RandChance(-0.0001) failed to panic")
+			t.Error("Chance(-0.0001) failed to panic")
 		}
 	}()
-	RandChance(-0.0001)
+	Chance(-0.0001)
 }
 
-func TestRandChance_GT1(t *testing.T) {
+func TestChance_GT1(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("RandChance(1.0001) failed to panic")
+			t.Error("Chance(1.0001) failed to panic")
 		}
 	}()
-	RandChance(1.0001)
+	Chance(1.0001)
 }
 
-func TestRandSelect_Empty(t *testing.T) {
+func TestSelect_Empty(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("RandSelect failed to panic on empty")
+			t.Error("Select failed to panic on empty")
 		}
 	}()
-	RandSelect([]int{}, func(x int) bool { return true })
+	Select([]int{}, func(x int) bool { return true })
 }
 
-func TestRandSelect_Invalid(t *testing.T) {
+func TestSelect_Invalid(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Error("RandSelect failed to panic on empty")
+			t.Error("Select failed to panic on empty")
 		}
 	}()
-	RandSelect([]int{1, 2, 3}, func(x int) bool { return false })
+	Select([]int{1, 2, 3}, func(x int) bool { return false })
 }

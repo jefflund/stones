@@ -1,4 +1,4 @@
-package hjkl
+package rand
 
 import "time"
 
@@ -7,75 +7,75 @@ import "time"
 // to support a different API for hjkl than math/rand provides.
 var lcg = uint64(time.Now().UnixNano())
 
-// RandSeed seeds the pseudo-random number generator.
-func RandSeed(seed uint64) {
+// Seed seeds the pseudo-random number generator.
+func Seed(seed uint64) {
 	lcg = seed
 }
 
-// RandSeed seeds the pseudo-random number generator using the current time.
-func RandSeedTime() {
+// Seed seeds the pseudo-random number generator using the current time.
+func SeedTime() {
 	lcg = uint64(time.Now().UnixNano())
 }
 
-// RandUint64 gets a pseudo-random uint64.
-func RandUint64() uint64 {
+// Uint64 gets a pseudo-random uint64.
+func Uint64() uint64 {
 	// Constants borrowed from MMIX by Donald Knuth.
 	lcg = lcg*6364136223846793005 + 1442695040888963407
 	return lcg
 }
 
-// RandInt gets a positive pseudo-random int.
-func RandInt() int {
-	return int(uint(RandUint64() << 1 >> 1))
+// Int gets a positive pseudo-random int.
+func Int() int {
+	return int(uint(Uint64() << 1 >> 1))
 }
 
-// RandIntn gets a positive pseudo-random int in [0, n). It panics if n <= 0.
-func RandIntn(n int) int {
+// Intn gets a positive pseudo-random int in [0, n). It panics if n <= 0.
+func Intn(n int) int {
 	if n <= 0 {
 		panic("n must be positive")
 	}
-	return RandInt() % n
+	return Int() % n
 }
 
-// RandRange gets a pseudo-random int in [a, b]. In panics if b < a.
-func RandRange(a, b int) int {
+// Range gets a pseudo-random int in [a, b]. In panics if b < a.
+func Range(a, b int) int {
 	if b < a {
 		panic("Cannot have b < a")
 	}
-	return RandIntn(b-a+1) + a
+	return Intn(b-a+1) + a
 }
 
-// RandFloat64 gets a pseudo-random float64 in [0, 1).
-func RandFloat64() float64 {
+// Float64 gets a pseudo-random float64 in [0, 1).
+func Float64() float64 {
 	for {
-		f := float64(RandInt()) / (1 << 63)
+		f := float64(Int()) / (1 << 63)
 		if f < 1 {
 			return f
 		}
 	}
 }
 
-// RandChance gets a pseudo-random bool which is true with probability p. It
+// Chance gets a pseudo-random bool which is true with probability p. It
 // panics if p is not in [0, 1].
-func RandChance(p float64) bool {
+func Chance(p float64) bool {
 	if p < 0 || p > 1 {
 		panic("p must be in [0, 1].")
 	}
-	return RandFloat64() < p
+	return Float64() < p
 }
 
-// RandChoice gets a pseudo-random element of a. It panics if len(a) == 0.
-func RandChoice[T any](a []T) T {
+// Choice gets a pseudo-random element of a. It panics if len(a) == 0.
+func Choice[T any](a []T) T {
 	if len(a) == 0 {
 		panic("a cannot be empty")
 	}
-	return a[RandIntn(len(a))]
+	return a[Intn(len(a))]
 }
 
-// RandIndex gets a pseudo-random index into a, with probability proportional
+// Index gets a pseudo-random index into a, with probability proportional
 // to the result of a weighting function. It panics if f returns a negative
 // weight, or if no element of a has positive weight.
-func RandIndex[T any](a []T, f func(T) int) int {
+func Index[T any](a []T, f func(T) int) int {
 	weights := make([]int, len(a))
 	n := 0
 	for i, t := range a {
@@ -90,7 +90,7 @@ func RandIndex[T any](a []T, f func(T) int) int {
 		panic("no valid weights")
 	}
 
-	sample := RandIntn(n)
+	sample := Intn(n)
 	for i, w := range weights {
 		if sample < w {
 			return i
@@ -101,9 +101,9 @@ func RandIndex[T any](a []T, f func(T) int) int {
 	panic("invalid state") // Should be impossible.
 }
 
-// RandSelect returns a pseudo-random element of a for which f returns true. It
+// Select returns a pseudo-random element of a for which f returns true. It
 // panics if a is empty or if f returns false for all elements of a.
-func RandSelect[T any](a []T, f func(T) bool) T {
+func Select[T any](a []T, f func(T) bool) T {
 	n := len(a)
 	if n == 0 {
 		panic("a cannot be empty")
@@ -111,7 +111,7 @@ func RandSelect[T any](a []T, f func(T) bool) T {
 
 	// Try rejection sampling for 1000 rounds.
 	for i := 0; i < 1000; i++ {
-		x := a[RandIntn(n)]
+		x := a[Intn(n)]
 		if f(x) {
 			return x
 		}
@@ -129,5 +129,5 @@ func RandSelect[T any](a []T, f func(T) bool) T {
 	if len(cands) == 0 {
 		panic("no valid values in a")
 	}
-	return a[cands[RandIntn(len(cands))]]
+	return a[cands[Intn(len(cands))]]
 }
