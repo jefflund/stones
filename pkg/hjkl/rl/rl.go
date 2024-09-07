@@ -1,4 +1,7 @@
-package hjkl
+// Package rl provides the basic data model for a roguelike game.
+package rl
+
+import "github.com/jefflund/stones/pkg/hjkl"
 
 // Event is a message handled by Mob.
 type Event any
@@ -30,14 +33,14 @@ func (c ComponentFunc[T]) Process(m *Mob, v Event) {
 
 // Mob is a game object which occupies Tile.
 type Mob struct {
-	Face Glyph
+	Face hjkl.Glyph
 	Pos  *Tile
 
 	Components []Component
 }
 
 // NewMob constructs a Mob with the given Glyph face.
-func NewMob(face Glyph) *Mob {
+func NewMob(face hjkl.Glyph) *Mob {
 	return &Mob{Face: face}
 }
 
@@ -54,7 +57,7 @@ func (m *Mob) AddComponent(c Component) {
 }
 
 // Move attempts to move the Mob to a new Tile.
-func (m *Mob) Move(delta Vector) {
+func (m *Mob) Move(delta hjkl.Vector) {
 	dst := m.Pos.Adjacent[delta]
 	if !dst.Pass {
 		m.Handle(&CollideEvent{dst})
@@ -69,21 +72,21 @@ func (m *Mob) Move(delta Vector) {
 
 // Tile is a square in the game map.
 type Tile struct {
-	Face     Glyph
+	Face     hjkl.Glyph
 	Pass     bool
 	Occupant *Mob
 
-	Offset   Vector
-	Adjacent map[Vector]*Tile
+	Offset   hjkl.Vector
+	Adjacent map[hjkl.Vector]*Tile
 }
 
 // NewTile creates a new Tile with the given Vector offset.
-func NewTile(offset Vector) *Tile {
+func NewTile(offset hjkl.Vector) *Tile {
 	return &Tile{
-		Face:     Ch('.'),
+		Face:     hjkl.Ch('.'),
 		Pass:     true,
 		Offset:   offset,
-		Adjacent: make(map[Vector]*Tile),
+		Adjacent: make(map[hjkl.Vector]*Tile),
 	}
 }
 

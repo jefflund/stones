@@ -42,8 +42,8 @@ func (a Vector) Chebyshev() int {
 	return math.Max(math.Abs(a.X), math.Abs(a.Y))
 }
 
-// dirs8 contains the eight point compass directions as Vector.
-var dirs8 = []Vector{
+// Dirs8 contains the eight point compass directions as Vector.
+var Dirs8 = []Vector{
 	{-1, -1},
 	{-1, 0},
 	{-1, 1},

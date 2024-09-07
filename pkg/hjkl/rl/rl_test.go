@@ -1,19 +1,21 @@
-package hjkl
+package rl
 
 import (
 	"testing"
+
+	"github.com/jefflund/stones/pkg/hjkl"
 )
 
 func TestMob_Move(t *testing.T) {
-	mob := NewMob(Ch('@'))
-	src := NewTile(Vec(0, 0))
-	dst := NewTile(Vec(1, 1))
+	mob := NewMob(hjkl.Ch('@'))
+	src := NewTile(hjkl.Vec(0, 0))
+	dst := NewTile(hjkl.Vec(1, 1))
 
 	mob.Pos = src
-	src.Adjacent[Vec(1, 1)] = dst
+	src.Adjacent[hjkl.Vec(1, 1)] = dst
 	src.Occupant = mob
 
-	mob.Move(Vec(1, 1))
+	mob.Move(hjkl.Vec(1, 1))
 
 	if src.Occupant != nil {
 		t.Error("Move failed to update src.Occupant")
@@ -27,9 +29,9 @@ func TestMob_Move(t *testing.T) {
 }
 
 func TestMob_CollideTriggerMove(t *testing.T) {
-	mob := NewMob(Ch('@'))
-	src := NewTile(Vec(0, 0))
-	dst := NewTile(Vec(1, 1))
+	mob := NewMob(hjkl.Ch('@'))
+	src := NewTile(hjkl.Vec(0, 0))
+	dst := NewTile(hjkl.Vec(1, 1))
 
 	collideSent := false
 	mob.Pos = src
@@ -38,11 +40,11 @@ func TestMob_CollideTriggerMove(t *testing.T) {
 			collideSent = true
 		}
 	}))
-	src.Adjacent[Vec(1, 1)] = dst
+	src.Adjacent[hjkl.Vec(1, 1)] = dst
 	src.Occupant = mob
 	dst.Pass = false
 
-	mob.Move(Vec(1, 1))
+	mob.Move(hjkl.Vec(1, 1))
 
 	if !collideSent {
 		t.Error("Move failed to send CollideEvent")
@@ -59,10 +61,10 @@ func TestMob_CollideTriggerMove(t *testing.T) {
 }
 
 func TestMob_Bump(t *testing.T) {
-	mob := NewMob(Ch('@'))
-	bumped := NewMob(Ch('D'))
-	src := NewTile(Vec(0, 0))
-	dst := NewTile(Vec(1, 1))
+	mob := NewMob(hjkl.Ch('@'))
+	bumped := NewMob(hjkl.Ch('D'))
+	src := NewTile(hjkl.Vec(0, 0))
+	dst := NewTile(hjkl.Vec(1, 1))
 
 	bumpSent := false
 	mob.Pos = src
@@ -71,11 +73,11 @@ func TestMob_Bump(t *testing.T) {
 			bumpSent = true
 		}
 	}))
-	src.Adjacent[Vec(1, 1)] = dst
+	src.Adjacent[hjkl.Vec(1, 1)] = dst
 	src.Occupant = mob
 	dst.Occupant = bumped
 
-	mob.Move(Vec(1, 1))
+	mob.Move(hjkl.Vec(1, 1))
 
 	if !bumpSent {
 		t.Error("Move failed to send BumpEvent")
@@ -92,8 +94,8 @@ func TestMob_Bump(t *testing.T) {
 }
 
 func TestPlaceMob(t *testing.T) {
-	mob := NewMob(Ch('@'))
-	dst := NewTile(Vec(1, 1))
+	mob := NewMob(hjkl.Ch('@'))
+	dst := NewTile(hjkl.Vec(1, 1))
 	PlaceMob(mob, dst)
 	if mob.Pos != dst {
 		t.Error("PlaceMob failed to set mob.Pos")

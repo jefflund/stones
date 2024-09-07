@@ -1,21 +1,26 @@
-package hjkl
+package gen
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/jefflund/stones/pkg/hjkl"
+	"github.com/jefflund/stones/pkg/hjkl/rl"
+)
 
 func TestGenTileGrid_GenTile(t *testing.T) {
 	numCalls := 0
-	offsets := make(map[Vector]struct{})
-	GenTileGrid(20, 10, func(o Vector) *Tile {
+	offsets := make(map[hjkl.Vector]struct{})
+	GenTileGrid(20, 10, func(o hjkl.Vector) *rl.Tile {
 		numCalls++
 		offsets[o] = struct{}{}
-		return NewTile(o)
+		return rl.NewTile(o)
 	})
 	if numCalls != 20*10 {
 		t.Fatal("GenTile called incorrect number of times")
 	}
 	for x := 0; x < 20; x++ {
 		for y := 0; y < 10; y++ {
-			if _, ok := offsets[Vector{x, y}]; !ok {
+			if _, ok := offsets[hjkl.Vec(x, y)]; !ok {
 				t.Fatal("GenTile missing an offset")
 			}
 		}
@@ -23,11 +28,11 @@ func TestGenTileGrid_GenTile(t *testing.T) {
 }
 
 func TestGenTileGrid_Offsets(t *testing.T) {
-	grid := GenTileGrid(20, 10, NewTile)
+	grid := GenTileGrid(20, 10, rl.NewTile)
 	if len(grid) != 20*10 {
 		t.Fatal("GetTileGrid created incorrect grid size")
 	}
-	offsets := make(map[Vector]struct{})
+	offsets := make(map[hjkl.Vector]struct{})
 	for _, tile := range grid {
 		if _, dupe := offsets[tile.Offset]; dupe {
 			t.Fatal("GenTileGrid created duplicate offset")
@@ -36,7 +41,7 @@ func TestGenTileGrid_Offsets(t *testing.T) {
 	}
 	for x := 0; x < 20; x++ {
 		for y := 0; y < 10; y++ {
-			if _, ok := offsets[Vector{x, y}]; !ok {
+			if _, ok := offsets[hjkl.Vec(x, y)]; !ok {
 				t.Fatal("GenTileGrid missing an offset")
 			}
 		}
@@ -45,7 +50,7 @@ func TestGenTileGrid_Offsets(t *testing.T) {
 
 func TestGenTileGrid_Connectivity(t *testing.T) {
 	const Cols, Rows = 20, 10
-	grid := GenTileGrid(Cols, Rows, NewTile)
+	grid := GenTileGrid(Cols, Rows, rl.NewTile)
 	for _, src := range grid {
 		xBound := src.Offset.X == 0 || src.Offset.X == Cols-1
 		yBound := src.Offset.Y == 0 || src.Offset.Y == Rows-1
@@ -69,8 +74,8 @@ func TestGenTileGrid_Connectivity(t *testing.T) {
 
 func TestGenFence(t *testing.T) {
 	const Cols, Rows = 20, 10
-	grid := GenTileGrid(Cols, Rows, NewTile)
-	GenFence(grid, func(t *Tile) {
+	grid := GenTileGrid(Cols, Rows, rl.NewTile)
+	GenFence(grid, func(t *rl.Tile) {
 		t.Pass = false
 	})
 

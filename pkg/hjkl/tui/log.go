@@ -1,4 +1,4 @@
-package hjkl
+package tui
 
 import (
 	"fmt"
