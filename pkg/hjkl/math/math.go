@@ -1,3 +1,4 @@
+// Package math provides int math functions.
 package math
 
 import "math"

@@ -1,3 +1,4 @@
+// Package rand provides pseudo-random number generation.
 package rand
 
 import "time"
