@@ -7,6 +7,37 @@ import (
 	"unicode"
 )
 
+// Log applies a formatting language to create a log message string.
+//
+// The format specifiers include the following:
+//
+//	%s - subject
+//	%o - object
+//	%v - verb
+//	%x - literal
+//
+// Additionally, verb literals may be included using the form <verb>.
+//
+// Each format specifier can be mapped to any arbitrary value, and is converted
+// to a string by fmt package. Consequently, format values should implement the
+// fmt.Stringer interface to ensure that the values are correctly represented
+// in the formatted string.
+//
+// Example usage:
+//
+//	Log("%s <hit> %o", hero, bear) yields "You hit the bear."
+//	Log("%s %v %o", tiger, verb, hero) yields "The saber-tooth slashes you."
+//	Log("%s <hit> %o!", tiger, rabbit) yields "The saber-tooth hits the rabbit!"
+//	Log("%s %v %o?", bear, verb, bear) yields "The bear hits itself?"
+//	Log("%s <laugh>", unique) yields "Gorp laughs."
+//
+// Note that if the fmt.String conversion for a value is "you" so that the
+// formatter knows which grammatical-person to use. Named monsters should have
+// string representations which are capitalized so the formatter knows not to
+// add articles to the names.
+//
+// Also note that if no ending punctuation is given, then a period is added
+// automatically. The sentence is also capitalized if was not already.
 func Log(s string, args ...any) string {
 	var subject any
 	var subjectNP string
@@ -57,6 +88,7 @@ func Log(s string, args ...any) string {
 	return s
 }
 
+// Data nneded by Log helper functions. These should be regarded as constants.
 var (
 	formatRE            = regexp.MustCompile("%s|%v|%o|%x|<.+?>")
 	articles            = []string{"the", "a", "an"}
@@ -84,6 +116,8 @@ var (
 	}
 )
 
+// getNounPhrase prepends the article 'the' to the noun unless it already
+// begins with an article or is a unique name.
 func getNounPhrase(arg any) string {
 	noun := fmt.Sprint(arg)
 	if noun == "I" || noun == "you" || isProper(noun) || includesArticle(noun) {
@@ -92,10 +126,12 @@ func getNounPhrase(arg any) string {
 	return fmt.Sprintf("the %s", noun)
 }
 
+// isProper returns true if the noun string is capitalized.
 func isProper(noun string) bool {
 	return unicode.IsUpper([]rune(noun)[0])
 }
 
+// includesArticle returns true if the noun string begins with an article.
 func includesArticle(noun string) bool {
 	for _, article := range articles {
 		if strings.HasPrefix(noun, fmt.Sprintf("%s ", article)) {
@@ -105,20 +141,21 @@ func includesArticle(noun string) bool {
 	return false
 }
 
+// conjugate returns the conjugated version of a verb for a given subject.
 func conjugate(arg any, subject string) string {
 	verb := fmt.Sprint(arg)
 	switch subject {
-	case "I":
+	case "I": // First person.
 		if conjugated, irregular := irregularVerbsFirst[verb]; irregular {
 			return conjugated
 		}
 		return verb
-	case "you":
+	case "you": // Second person.
 		if conjugated, irregular := irregularVerbsSecond[verb]; irregular {
 			return conjugated
 		}
 		return verb
-	default:
+	default: // Third person.
 		if conjugated, irregular := irregularVerbsThird[verb]; irregular {
 			return conjugated
 		}
@@ -134,6 +171,7 @@ func conjugate(arg any, subject string) string {
 	}
 }
 
+// getReflexivePronoun gets the reflexive pronoun for a noun.
 func getReflexivePronoun(noun string) string {
 	if noun == "I" {
 		return "myself"
@@ -145,6 +183,7 @@ func getReflexivePronoun(noun string) string {
 	return "itself"
 }
 
+// ensurePunctuated appends a '.' to a string unless it is already punctuated.
 func ensurePunctuated(s string) string {
 	for _, punctuation := range endPunctuation {
 		if strings.HasSuffix(s, punctuation) {
