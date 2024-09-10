@@ -5,6 +5,7 @@ import (
 	"github.com/jefflund/stones/pkg/hjkl/math/rand"
 	"github.com/jefflund/stones/pkg/hjkl/rl"
 	"github.com/jefflund/stones/pkg/hjkl/rl/gen"
+	"github.com/jefflund/stones/pkg/hjkl/tui"
 )
 
 type Game struct {
@@ -13,7 +14,7 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	tiles := gen.GenTileGrid(60, 22, func(o hjkl.Vector) *rl.Tile {
+	tiles := gen.GenTileGrid(78, 22, func(o hjkl.Vector) *rl.Tile {
 		t := rl.NewTile(o)
 		if rand.Chance(0.1) {
 			t.Face = hjkl.Glyph{Ch: '%', Fg: hjkl.ColorGreen}
@@ -24,10 +25,6 @@ func NewGame() *Game {
 	open := func(t *rl.Tile) bool {
 		return t.Pass && t.Occupant == nil
 	}
-	gen.GenFence(tiles, func(t *rl.Tile) {
-		t.Face = hjkl.Ch('#')
-		t.Pass = false
-	})
 
 	hero := rl.NewMob(hjkl.Ch('@'))
 	rl.PlaceMob(hero, rand.Select(tiles, open))
@@ -50,12 +47,8 @@ func (g *Game) Update(ks []hjkl.Key) error {
 }
 
 func (g *Game) Draw(c hjkl.Canvas) {
-	for _, t := range g.Tiles {
-		c.Blit(t.Offset, t.Face)
-		if t.Occupant != nil {
-			c.Blit(t.Offset, t.Occupant.Face)
-		}
-	}
+	tui.DrawBorder(c, hjkl.Vec(0, 0), hjkl.Vec(80, 24))
+	tui.DrawTiles(c, hjkl.Vec(1, 1), g.Tiles)
 }
 
 func main() {
