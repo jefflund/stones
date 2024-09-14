@@ -29,9 +29,9 @@ func (c MockCanvas) Equals(expected []string) bool {
 	return len(c) == n
 }
 
-func TestDrawBorder(t *testing.T) {
+func TestBorderWidget(t *testing.T) {
 	c := make(MockCanvas)
-	DrawBorder(c, hjkl.Vec(1, 2), hjkl.Vec(5, 3))
+	NewBorder(hjkl.Vec(1, 2), hjkl.Vec(5, 3)).Draw(c)
 	expected := []string{
 		"           ",
 		"           ",
@@ -66,7 +66,7 @@ func TestDrawTiles(t *testing.T) {
 		asdf(1, 2, '+', 0),
 		asdf(2, 2, '#', 0),
 	}
-	DrawTiles(c, hjkl.Vec(2, 1), tiles)
+	NewTiles(hjkl.Vec(2, 1), hjkl.Vec(3, 3), tiles).Draw(c)
 	expected := []string{
 		"        ",
 		"  ###   ",

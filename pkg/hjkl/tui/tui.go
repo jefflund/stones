@@ -6,30 +6,79 @@ import (
 	"github.com/jefflund/stones/pkg/hjkl/rl"
 )
 
-// DrawBorder draws the outline of a rectangle.
-func DrawBorder(c hjkl.Canvas, pos, size hjkl.Vector) {
-	bound := pos.Add(size).Sub(hjkl.Vec(1, 1))
-	for x := pos.X + 1; x <= bound.X-1; x++ {
-		c.Blit(hjkl.Vec(x, pos.Y), hjkl.Ch('-'))
-		c.Blit(hjkl.Vec(x, bound.Y), hjkl.Ch('-'))
-	}
-	for y := pos.Y + 1; y <= bound.Y-1; y++ {
-		c.Blit(hjkl.Vec(pos.X, y), hjkl.Ch('|'))
-		c.Blit(hjkl.Vec(bound.X, y), hjkl.Ch('|'))
-	}
-	c.Blit(pos, hjkl.Ch('+'))
-	c.Blit(hjkl.Vec(bound.X, pos.Y), hjkl.Ch('+'))
-	c.Blit(hjkl.Vec(pos.X, bound.Y), hjkl.Ch('+'))
-	c.Blit(bound, hjkl.Ch('+'))
+// Widget is something which can draw itself on a Canvas.
+type Widget interface {
+	Draw(hjkl.Canvas)
 }
 
-// DrawTiles draws a set of Tile at a given Vector offset.
-func DrawTiles(c hjkl.Canvas, offset hjkl.Vector, tiles []*rl.Tile) {
-	for _, t := range tiles {
+// TUI is a slice of Widget.
+type TUI []Widget
+
+// Draw has each constituent Widget draw itself.
+func (t TUI) Draw(c hjkl.Canvas) {
+	for _, w := range t {
+		w.Draw(c)
+	}
+}
+
+// Window serves as a base for various Widget which need relative drawing.
+type Window struct {
+	Pos  hjkl.Vector
+	Size hjkl.Vector
+}
+
+// Blit performs a Blit on the canvas relative to the location of the Window.
+func (w *Window) Blit(c hjkl.Canvas, v hjkl.Vector, g hjkl.Glyph) {
+	if 0 <= v.X && v.X < w.Size.X && 0 <= v.Y && v.Y < w.Size.Y {
+		c.Blit(w.Pos.Add(v), g)
+	}
+}
+
+// BorderWidget is a Widget which draws a border at its bounds.
+type BorderWidget struct {
+	Window
+}
+
+// NewBorder creates a BorderWidget with the given bounds.
+func NewBorder(pos, size hjkl.Vector) *BorderWidget {
+	return &BorderWidget{Window{pos, size}}
+}
+
+// Draw draws a border at the BorderWidget bounds.
+func (w *BorderWidget) Draw(c hjkl.Canvas) {
+	maxX, maxY := w.Size.X-1, w.Size.Y-1
+	for x := 1; x < maxX; x++ {
+		w.Blit(c, hjkl.Vec(x, 0), hjkl.Ch('-'))
+		w.Blit(c, hjkl.Vec(x, maxY), hjkl.Ch('-'))
+	}
+	for y := 1; y <= maxY; y++ {
+		w.Blit(c, hjkl.Vec(0, y), hjkl.Ch('|'))
+		w.Blit(c, hjkl.Vec(maxX, y), hjkl.Ch('|'))
+	}
+	w.Blit(c, hjkl.Vec(0, 0), hjkl.Ch('+'))
+	w.Blit(c, hjkl.Vec(maxX, 0), hjkl.Ch('+'))
+	w.Blit(c, hjkl.Vec(0, maxY), hjkl.Ch('+'))
+	w.Blit(c, hjkl.Vec(maxX, maxY), hjkl.Ch('+'))
+}
+
+// TilesWidget is a Widget which draws a collection of Tile.
+type TilesWidget struct {
+	Window
+	Tiles []*rl.Tile
+}
+
+// NewTiles creates a TileWidget with the given collection of Tile.
+func NewTiles(pos, size hjkl.Vector, tiles []*rl.Tile) *TilesWidget {
+	return &TilesWidget{Window{pos, size}, tiles}
+}
+
+// Draw draws the collection of Tile within the TilesWidget bounds.
+func (w *TilesWidget) Draw(c hjkl.Canvas) {
+	for _, t := range w.Tiles {
 		f := t.Face
 		if t.Occupant != nil {
 			f = t.Occupant.Face
 		}
-		c.Blit(t.Offset.Add(offset), f)
+		w.Blit(c, t.Offset, f)
 	}
 }

@@ -9,6 +9,7 @@ import (
 )
 
 type Game struct {
+	tui.TUI
 	Hero  *rl.Mob
 	Tiles []*rl.Tile
 }
@@ -29,7 +30,12 @@ func NewGame() *Game {
 	hero := rl.NewMob(hjkl.Ch('@'))
 	rl.PlaceMob(hero, rand.Select(tiles, open))
 
-	return &Game{hero, tiles}
+	screen := tui.TUI{
+		tui.NewBorder(hjkl.Vec(0, 0), hjkl.Vec(80, 24)),
+		tui.NewTiles(hjkl.Vec(1, 1), hjkl.Vec(78, 22), tiles),
+	}
+
+	return &Game{screen, hero, tiles}
 }
 
 func (g *Game) Update(ks []hjkl.Key) error {
@@ -44,11 +50,6 @@ func (g *Game) Update(ks []hjkl.Key) error {
 		}
 	}
 	return nil
-}
-
-func (g *Game) Draw(c hjkl.Canvas) {
-	tui.DrawBorder(c, hjkl.Vec(0, 0), hjkl.Vec(80, 24))
-	tui.DrawTiles(c, hjkl.Vec(1, 1), g.Tiles)
 }
 
 func main() {
