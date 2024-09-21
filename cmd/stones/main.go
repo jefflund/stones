@@ -15,10 +15,11 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	tiles := gen.GenTileGrid(78, 22, func(o hjkl.Vector) *rl.Tile {
+	tiles := gen.GenTileGrid(48, 22, func(o hjkl.Vector) *rl.Tile {
 		t := rl.NewTile(o)
 		if rand.Chance(0.1) {
-			t.Face = hjkl.Glyph{Ch: '%', Fg: hjkl.ColorGreen}
+			ch := rand.Choice([]rune{'%', '%', '&', '|'})
+			t.Face = hjkl.Glyph{Ch: ch, Fg: hjkl.ColorGreen}
 			t.Pass = false
 		}
 		return t
@@ -30,9 +31,19 @@ func NewGame() *Game {
 	hero := rl.NewMob(hjkl.Ch('@'))
 	rl.PlaceMob(hero, rand.Select(tiles, open))
 
+	log := tui.NewLog(hjkl.Vec(50, 1), hjkl.Vec(29, 22))
+	hero.AddComponent(rl.ComponentFunc[rl.CollideEvent](func(m *rl.Mob, v *rl.CollideEvent) {
+		log.Update(tui.Log(
+			"%s <bump> %o",
+			string(m.Face.Ch),
+			string(v.Obstacle.Face.Ch)))
+	}))
+
 	screen := tui.TUI{
-		tui.NewBorder(hjkl.Vec(0, 0), hjkl.Vec(80, 24)),
-		tui.NewTiles(hjkl.Vec(1, 1), hjkl.Vec(78, 22), tiles),
+		tui.NewBorder(hjkl.Vec(0, 0), hjkl.Vec(50, 24)),
+		tui.NewTiles(hjkl.Vec(1, 1), hjkl.Vec(48, 22), tiles),
+		tui.NewBorder(hjkl.Vec(49, 0), hjkl.Vec(31, 24)),
+		log,
 	}
 
 	return &Game{screen, hero, tiles}

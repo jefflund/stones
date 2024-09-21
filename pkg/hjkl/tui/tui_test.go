@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/jefflund/stones/pkg/hjkl"
@@ -41,11 +42,11 @@ func TestBorderWidget(t *testing.T) {
 		"           ",
 	}
 	if !c.Equals(expected) {
-		t.Error("DrawBorder produced incorrect buffer")
+		t.Error("BorderWidget.Draw produced incorrect buffer")
 	}
 }
 
-func TestDrawTiles(t *testing.T) {
+func TestTilesWidget(t *testing.T) {
 	c := make(MockCanvas)
 	asdf := func(x, y int, f, o rune) *rl.Tile {
 		t := rl.NewTile(hjkl.Vec(x, y))
@@ -75,6 +76,49 @@ func TestDrawTiles(t *testing.T) {
 		"        ",
 	}
 	if !c.Equals(expected) {
-		t.Error("DrawTilesproduced incorrect buffer", c)
+		t.Error("TilesWidget.Draw produced incorrect buffer", c)
+	}
+}
+
+func TestLogWidget_Update(t *testing.T) {
+	cases := []struct {
+		update   string
+		expected []string
+	}{
+		{"abc", []string{"abc"}},
+		{"abc", []string{"abc", "abc"}},
+		{"asdf", []string{"abc", "abc", "asdf"}},
+		{"hjkl", []string{"abc", "asdf", "hjkl"}},
+		{"abc", []string{"asdf", "hjkl", "abc"}},
+	}
+	w := NewLog(hjkl.Vec(0, 0), hjkl.Vec(3, 3))
+	for _, c := range cases {
+		w.Update(c.update)
+		if !reflect.DeepEqual(w.History, c.expected) {
+			t.Fatal("LogWidget.Update produced incorrect history")
+		}
+	}
+}
+
+func TestLogWidget_Draw(t *testing.T) {
+	c := MockCanvas{}
+	w := &LogWidget{
+		Window: Window{hjkl.Vec(2, 1), hjkl.Vec(3, 3)},
+		History: []string{
+			"rl",
+			"abc",
+			"hjkl",
+		},
+	}
+	w.Draw(c)
+	expected := []string{
+		"        ",
+		"  rl    ",
+		"  abc   ",
+		"  hjk   ",
+		"        ",
+	}
+	if !c.Equals(expected) {
+		t.Error("LogWidget.Draw produced incorrect buffer", c)
 	}
 }

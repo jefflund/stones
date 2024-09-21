@@ -82,3 +82,33 @@ func (w *TilesWidget) Draw(c hjkl.Canvas) {
 		w.Blit(c, t.Offset, f)
 	}
 }
+
+// LogWidget is a Widget which draws log messages.
+type LogWidget struct {
+	Window
+	History []string
+}
+
+// NewLog creates a LogWidget with an empty history.
+func NewLog(pos, size hjkl.Vector) *LogWidget {
+	return &LogWidget{
+		Window: Window{pos, size},
+	}
+}
+
+// Update appends a message to the history.
+func (w *LogWidget) Update(msg string) {
+	w.History = append(w.History, msg)
+	if len(w.History) > w.Size.Y {
+		w.History = w.History[len(w.History)-w.Size.Y:]
+	}
+}
+
+// Draw displays the log history.
+func (w *LogWidget) Draw(c hjkl.Canvas) {
+	for y, msg := range w.History {
+		for x, ch := range msg {
+			w.Blit(c, hjkl.Vec(x, y), hjkl.Ch(ch))
+		}
+	}
+}
