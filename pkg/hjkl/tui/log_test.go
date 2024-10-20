@@ -44,6 +44,11 @@ func TestLog(t *testing.T) {
 		{"%s %v %o", []any{tiger, "lick", tiger}, "The tiger licks itself."},
 		{"%s %v %o!", []any{I, "hit", mammoth}, "I hit the mammoth!"},
 		{"%s %v %o.", []any{I, "hit", mammoth}, "I hit the mammoth."},
+		{"%s %v %o", []any{I, "hit"}, "I hit %!o(MISSING)."},
+		{"%s %v", []any{you, "rest", tiger}, "You rest.%!(EXTRA tiger)"},
+		{"%s %v %o", []any{"", "hit", mammoth}, "%!s(EMPTY) hits the mammoth."},
+		{"%s %v %o", []any{I, "", mammoth}, "I %!v(EMPTY) the mammoth."},
+		{"%s %v %o", []any{you, "hit", ""}, "You hit %!o(EMPTY)."},
 	}
 	for _, c := range cases {
 		if actual := Log(c.Fmt, c.Args...); actual != c.Expected {

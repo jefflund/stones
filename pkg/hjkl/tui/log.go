@@ -45,28 +45,33 @@ func Log(s string, args ...any) string {
 	replaceFn := func(match string) string {
 		if match[0] == '%' {
 			if len(args) == 0 {
-				return fmt.Sprintf("%%!%s(MISSING)", match[1:])
+				return fmt.Sprintf("%%!%c(MISSING)", match[1])
 			}
 
 			arg := args[0]
+			argstr := fmt.Sprint(arg)
 			args = args[1:]
+			if argstr == "" {
+				return fmt.Sprintf("%%!%c(EMPTY)", match[1])
+			}
 			switch match {
 			case "%s":
 				subject = arg
-				subjectNP = getNounPhrase(subject)
+				subjectNP = getNounPhrase(argstr)
 				return subjectNP
 			case "%v":
-				return conjugate(arg, subjectNP)
+				return conjugate(argstr, subjectNP)
 			case "%o":
 				if arg == subject {
 					return getReflexivePronoun(subjectNP)
 				}
-				return getNounPhrase(arg)
+				return getNounPhrase(argstr)
 			case "%x":
-				return fmt.Sprint(arg)
+				return argstr
 			}
 		}
 
+		// If match doesn't start with '%', it must be a verb literal.
 		verb := match[1 : len(match)-1]
 		return conjugate(verb, subjectNP)
 	}
@@ -118,8 +123,7 @@ var (
 
 // getNounPhrase prepends the article 'the' to the noun unless it already
 // begins with an article or is a unique name.
-func getNounPhrase(arg any) string {
-	noun := fmt.Sprint(arg)
+func getNounPhrase(noun string) string {
 	if noun == "I" || noun == "you" || isProper(noun) || includesArticle(noun) {
 		return noun
 	}
@@ -142,8 +146,7 @@ func includesArticle(noun string) bool {
 }
 
 // conjugate returns the conjugated version of a verb for a given subject.
-func conjugate(arg any, subject string) string {
-	verb := fmt.Sprint(arg)
+func conjugate(verb, subject string) string {
 	switch subject {
 	case "I": // First person.
 		if conjugated, irregular := irregularVerbsFirst[verb]; irregular {
