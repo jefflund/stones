@@ -31,12 +31,28 @@ func NewGame() *Game {
 	hero := rl.NewMob(hjkl.Ch('@'))
 	rl.PlaceMob(hero, rand.Select(tiles, open))
 
+	for i := 0; i < 10; i++ {
+		mob := rl.NewMob(rand.Choice([]hjkl.Glyph{
+			{Ch: 'M', Fg: hjkl.ColorLightBlack},
+			{Ch: 'M', Fg: hjkl.ColorLightBlack},
+			{Ch: 't', Fg: hjkl.ColorYellow},
+			{Ch: 'r', Fg: hjkl.ColorRed},
+		}))
+		rl.PlaceMob(mob, rand.Select(tiles, open))
+	}
+
 	log := tui.NewLog(hjkl.Vec(50, 1), hjkl.Vec(29, 22))
 	hero.AddComponent(rl.ComponentFunc[rl.CollideEvent](func(m *rl.Mob, v *rl.CollideEvent) {
 		log.Update(tui.Log(
-			"%s <bump> %o",
+			"%s <colide> with %o",
 			string(m.Face.Ch),
 			string(v.Obstacle.Face.Ch)))
+	}))
+	hero.AddComponent(rl.ComponentFunc[rl.BumpEvent](func(m *rl.Mob, v *rl.BumpEvent) {
+		log.Update(tui.Log(
+			"%s <bump> %o",
+			string(m.Face.Ch),
+			string(v.Bumped.Face.Ch)))
 	}))
 
 	screen := tui.TUI{
