@@ -32,6 +32,11 @@ func NewCircle(name string, stone Stone, count int) *Circle {
 	return &Circle{name, stone, count, count}
 }
 
+// Matches returns true if the Circle Stone matches the given Stone.
+func (c *Circle) Matches(t Stone) bool {
+	return c.Stone&t == t
+}
+
 // Skin represents a character as a collection of Circle.
 type Skin struct {
 	Name    string
@@ -41,4 +46,26 @@ type Skin struct {
 // NewSkin creates a Skin.
 func NewSkin(name string, circles ...*Circle) *Skin {
 	return &Skin{name, circles}
+}
+
+// Count gets the current count of a Stone type on Skin.
+func (s *Skin) Count(t Stone) int {
+	count := 0
+	for _, c := range s.Circles {
+		if c.Matches(t) {
+			count += c.Count
+		}
+	}
+	return count
+}
+
+// Count gets the maximum count of a Stone type on Skin.
+func (s *Skin) MaxCount(t Stone) int {
+	count := 0
+	for _, c := range s.Circles {
+		if c.Matches(t) {
+			count += c.MaxCount
+		}
+	}
+	return count
 }
