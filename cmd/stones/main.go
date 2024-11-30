@@ -42,13 +42,13 @@ func NewGame() *Game {
 	}
 
 	log := tui.NewLog(hjkl.Vec(50, 1), hjkl.Vec(29, 22))
-	hero.AddComponent(rl.ComponentFunc[rl.CollideEvent](func(m *rl.Mob, v *rl.CollideEvent) {
+	hero.AddComponent(rl.EventProcessor(func(m *rl.Mob, v *rl.CollideEvent) {
 		log.Update(tui.Log(
 			"%s <colide> with %o",
 			string(m.Face.Ch),
 			string(v.Obstacle.Face.Ch)))
 	}))
-	hero.AddComponent(rl.ComponentFunc[rl.BumpEvent](func(m *rl.Mob, v *rl.BumpEvent) {
+	hero.AddComponent(rl.EventProcessor(func(m *rl.Mob, v *rl.BumpEvent) {
 		log.Update(tui.Log(
 			"%s <bump> %o",
 			string(m.Face.Ch),

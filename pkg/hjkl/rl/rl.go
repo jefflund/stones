@@ -21,14 +21,21 @@ type Component interface {
 	Process(*Mob, Event)
 }
 
-// ComponentFunc is a function which implements Component.
-type ComponentFunc[T Event] func(m *Mob, v *T)
+// ComponentFunc is a function which acts as Component.
+type ComponentFunc func(m *Mob, v Event)
 
-// Process calls the function if the Event has the correct type.
-func (c ComponentFunc[T]) Process(m *Mob, v Event) {
-	if v, ok := v.(*T); ok {
-		c(m, v)
-	}
+// Process implements Component by calling the function.
+func (c ComponentFunc) Process(m *Mob, v Event) {
+	c(m, v)
+}
+
+// EventProcessor creates a ComponentFunc which processes a single Event type.
+func EventProcessor[V Event](f func(m *Mob, v *V)) ComponentFunc {
+	return ComponentFunc(func(m *Mob, v Event) {
+		if v, ok := v.(*V); ok {
+			f(m, v)
+		}
+	})
 }
 
 // Mob is a game object which occupies Tile.

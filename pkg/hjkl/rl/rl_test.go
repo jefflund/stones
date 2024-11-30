@@ -35,7 +35,7 @@ func TestMob_CollideTriggerMove(t *testing.T) {
 
 	collideSent := false
 	mob.Pos = src
-	mob.AddComponent(ComponentFunc[CollideEvent](func(m *Mob, v *CollideEvent) {
+	mob.AddComponent(EventProcessor(func(m *Mob, v *CollideEvent) {
 		if m == mob && v.Obstacle == dst {
 			collideSent = true
 		}
@@ -68,7 +68,7 @@ func TestMob_Bump(t *testing.T) {
 
 	bumpSent := false
 	mob.Pos = src
-	mob.AddComponent(ComponentFunc[BumpEvent](func(m *Mob, v *BumpEvent) {
+	mob.AddComponent(EventProcessor(func(m *Mob, v *BumpEvent) {
 		if m == mob && v.Bumped == bumped {
 			bumpSent = true
 		}
