@@ -3,6 +3,7 @@ package math
 
 import "math"
 
+// Hypot returns the sqrt(x * x + y * y).
 func Hypot(x, y int) float64 {
 	return math.Hypot(float64(x), float64(y))
 }
