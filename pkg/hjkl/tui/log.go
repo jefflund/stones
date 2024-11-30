@@ -7,7 +7,12 @@ import (
 	"unicode"
 )
 
-// Log applies a formatting language to create a log message string.
+// LogEvent is an Event containg a log message.
+type LogEvent struct {
+	Message string
+}
+
+// Log applies a formatting language to create a LogEvent.
 //
 // The format specifiers include the following:
 //
@@ -38,7 +43,7 @@ import (
 //
 // Also note that if no ending punctuation is given, then a period is added
 // automatically. The sentence is also capitalized if was not already.
-func Log(s string, args ...any) string {
+func Log(s string, args ...any) *LogEvent {
 	var subject any
 	var subjectNP string
 
@@ -90,7 +95,7 @@ func Log(s string, args ...any) string {
 		s = fmt.Sprintf("%s%%!(EXTRA %s)", s, extra)
 	}
 
-	return s
+	return &LogEvent{s}
 }
 
 // Data nneded by Log helper functions. These should be regarded as constants.

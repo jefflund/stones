@@ -51,7 +51,7 @@ func TestLog(t *testing.T) {
 		{"%s %v %o", []any{you, "hit", ""}, "You hit %!o(EMPTY)."},
 	}
 	for _, c := range cases {
-		if actual := Log(c.Fmt, c.Args...); actual != c.Expected {
+		if actual := Log(c.Fmt, c.Args...).Message; actual != c.Expected {
 			t.Errorf("Got: \"%s\", Wanted: \"%s\"", actual, c.Expected)
 		}
 	}

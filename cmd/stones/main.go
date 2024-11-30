@@ -42,17 +42,23 @@ func NewGame() *Game {
 	}
 
 	log := tui.NewLog(hjkl.Vec(50, 1), hjkl.Vec(29, 22))
-	hero.AddComponent(rl.EventProcessor(func(m *rl.Mob, v *rl.CollideEvent) {
-		log.Update(tui.Log(
-			"%s <colide> with %o",
-			string(m.Face.Ch),
-			string(v.Obstacle.Face.Ch)))
-	}))
-	hero.AddComponent(rl.EventProcessor(func(m *rl.Mob, v *rl.BumpEvent) {
-		log.Update(tui.Log(
-			"%s <bump> %o",
-			string(m.Face.Ch),
-			string(v.Bumped.Face.Ch)))
+	hero.AddComponent(rl.ComponentFunc(func(m *rl.Mob, v rl.Event) {
+		switch v := v.(type) {
+		case *rl.CollideEvent:
+			m.Handle(tui.Log(
+				"%s <colide> with %o",
+				string(m.Face.Ch),
+				string(v.Obstacle.Face.Ch),
+			))
+		case *rl.BumpEvent:
+			m.Handle(tui.Log(
+				"%s <bump> %o",
+				string(m.Face.Ch),
+				string(v.Bumped.Face.Ch),
+			))
+		case *tui.LogEvent:
+			log.Update(v.Message)
+		}
 	}))
 
 	screen := tui.TUI{
