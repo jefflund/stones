@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/jefflund/stones/pkg/habilis"
 	"github.com/jefflund/stones/pkg/hjkl"
 	"github.com/jefflund/stones/pkg/hjkl/math/rand"
 	"github.com/jefflund/stones/pkg/hjkl/rl"
@@ -29,15 +30,19 @@ func NewGame() *Game {
 	}
 
 	hero := rl.NewMob(hjkl.Ch('@'))
+	hero.AddComponent(rl.EventProcessor(func(m *rl.Mob, v *tui.NameQuery) {
+		v.Response = "you"
+	}))
 	rl.PlaceMob(hero, rand.Select(tiles, open))
 
 	for i := 0; i < 10; i++ {
-		mob := rl.NewMob(rand.Choice([]hjkl.Glyph{
-			{Ch: 'M', Fg: hjkl.ColorLightBlack},
-			{Ch: 'M', Fg: hjkl.ColorLightBlack},
-			{Ch: 't', Fg: hjkl.ColorYellow},
-			{Ch: 'r', Fg: hjkl.ColorRed},
-		}))
+		mob := rl.NewMob(hjkl.Ch('M'))
+		mob.AddComponent(habilis.NewSkin("mammoth"))
+		rl.PlaceMob(mob, rand.Select(tiles, open))
+	}
+	for i := 0; i < 5; i++ {
+		mob := rl.NewMob(hjkl.Glyph{Ch: 't', Fg: hjkl.ColorYellow})
+		mob.AddComponent(habilis.NewSkin("saber-tooth"))
 		rl.PlaceMob(mob, rand.Select(tiles, open))
 	}
 
@@ -45,17 +50,9 @@ func NewGame() *Game {
 	hero.AddComponent(rl.ComponentFunc(func(m *rl.Mob, v rl.Event) {
 		switch v := v.(type) {
 		case *rl.CollideEvent:
-			m.Handle(tui.Log(
-				"%s <colide> with %o",
-				string(m.Face.Ch),
-				string(v.Obstacle.Face.Ch),
-			))
+			m.Handle(tui.Log("%s <collide> with %o", m, v.Obstacle))
 		case *rl.BumpEvent:
-			m.Handle(tui.Log(
-				"%s <bump> %o",
-				string(m.Face.Ch),
-				string(v.Bumped.Face.Ch),
-			))
+			m.Handle(tui.Log("%s <bump> %o", m, v.Bumped))
 		case *tui.LogEvent:
 			log.Update(v.Message)
 		}

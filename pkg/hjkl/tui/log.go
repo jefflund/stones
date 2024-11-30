@@ -5,7 +5,14 @@ import (
 	"regexp"
 	"strings"
 	"unicode"
+
+	"github.com/jefflund/stones/pkg/hjkl/rl"
 )
+
+// NameQuery is an Event querying a Mob for its string name.
+type NameQuery struct {
+	Response string
+}
 
 // LogEvent is an Event containg a log message.
 type LogEvent struct {
@@ -54,7 +61,7 @@ func Log(s string, args ...any) *LogEvent {
 			}
 
 			arg := args[0]
-			argstr := fmt.Sprint(arg)
+			argstr := getArgstr(arg)
 			args = args[1:]
 			if argstr == "" {
 				return fmt.Sprintf("%%!%c(EMPTY)", match[1])
@@ -89,7 +96,7 @@ func Log(s string, args ...any) *LogEvent {
 	if len(args) > 0 {
 		argstrs := make([]string, len(args))
 		for i, arg := range args {
-			argstrs[i] = fmt.Sprint(arg)
+			argstrs[i] = getArgstr(arg)
 		}
 		extra := strings.Join(argstrs, ", ")
 		s = fmt.Sprintf("%s%%!(EXTRA %s)", s, extra)
@@ -125,6 +132,18 @@ var (
 		"would":  "would",
 	}
 )
+
+// getArgstr converts an arbitrary argument to a string.
+func getArgstr(arg any) string {
+	if m, ok := arg.(*rl.Mob); ok {
+		q := NameQuery{}
+		m.Handle(&q)
+		if q.Response != "" {
+			return q.Response
+		}
+	}
+	return fmt.Sprint(arg)
+}
 
 // getNounPhrase prepends the article 'the' to the noun unless it already
 // begins with an article or is a unique name.

@@ -1,6 +1,10 @@
 package tui
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/jefflund/stones/pkg/hjkl/rl"
+)
 
 type Obj struct {
 	Name string
@@ -15,7 +19,10 @@ func TestLog(t *testing.T) {
 	you := &Obj{"you"}
 	Grog := &Obj{"Grog"}
 	mammoth := &Obj{"mammoth"}
-	tiger := &Obj{"tiger"}
+	tiger := &rl.Mob{}
+	tiger.AddComponent(rl.EventProcessor(func(m *rl.Mob, v *NameQuery) {
+		v.Response = "tiger"
+	}))
 
 	cases := []struct {
 		Fmt      string

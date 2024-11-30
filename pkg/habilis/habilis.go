@@ -1,6 +1,11 @@
 // Package habilis implements the habilis system from Cavemaster RPG.
 package habilis
 
+import (
+	"github.com/jefflund/stones/pkg/hjkl/rl"
+	"github.com/jefflund/stones/pkg/hjkl/tui"
+)
+
 // Stone is the core mechanic of habilis, representing health and abilities.
 type Stone uint64
 
@@ -46,6 +51,13 @@ type Skin struct {
 // NewSkin creates a Skin.
 func NewSkin(name string, circles ...*Circle) *Skin {
 	return &Skin{name, circles}
+}
+
+func (s *Skin) Process(m *rl.Mob, v rl.Event) {
+	switch v := v.(type) {
+	case *tui.NameQuery:
+		v.Response = s.Name
+	}
 }
 
 // Count gets the current count of a Stone type on Skin.
