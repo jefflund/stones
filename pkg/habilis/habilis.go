@@ -32,11 +32,6 @@ type Circle struct {
 	MaxCount int
 }
 
-// NewCircle creates a Circle.
-func NewCircle(name string, stone Stone, count int) *Circle {
-	return &Circle{name, stone, count, count}
-}
-
 // Matches returns true if the Circle Stone matches the given Stone.
 func (c *Circle) Matches(t Stone) bool {
 	return c.Stone&t == t
@@ -48,11 +43,7 @@ type Skin struct {
 	Circles []*Circle
 }
 
-// NewSkin creates a Skin.
-func NewSkin(name string, circles ...*Circle) *Skin {
-	return &Skin{name, circles}
-}
-
+// Process implements Component for Skin.
 func (s *Skin) Process(m *rl.Mob, v rl.Event) {
 	switch v := v.(type) {
 	case *tui.NameQuery:

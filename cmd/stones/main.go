@@ -35,14 +35,8 @@ func NewGame() *Game {
 	}))
 	rl.PlaceMob(hero, rand.Select(tiles, open))
 
-	for i := 0; i < 10; i++ {
-		mob := rl.NewMob(hjkl.Ch('M'))
-		mob.AddComponent(habilis.NewSkin("mammoth"))
-		rl.PlaceMob(mob, rand.Select(tiles, open))
-	}
-	for i := 0; i < 5; i++ {
-		mob := rl.NewMob(hjkl.Glyph{Ch: 't', Fg: hjkl.ColorYellow})
-		mob.AddComponent(habilis.NewSkin("saber-tooth"))
+	for i := 0; i < 20; i++ {
+		mob := rand.Choice(habilis.Bestiary).New()
 		rl.PlaceMob(mob, rand.Select(tiles, open))
 	}
 

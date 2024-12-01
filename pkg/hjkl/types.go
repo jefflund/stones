@@ -109,3 +109,8 @@ type Glyph struct {
 func Ch(ch rune) Glyph {
 	return Glyph{Ch: ch, Fg: ColorWhite, Bg: ColorBlack}
 }
+
+// ChFg is shorthand for Glyph{Ch: ch, Fg: fg, Bg: ColorBlack}.
+func ChFg(ch rune, fg Color) Glyph {
+	return Glyph{Ch: ch, Fg: fg, Bg: ColorBlack}
+}
