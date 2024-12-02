@@ -4,8 +4,8 @@ package rand
 import "time"
 
 // lcg is a linear congruential generator. This isn't a good generator per se,
-// but its good enough for hjkl and very fast. More to the point, we'll use it
-// to support a different API for hjkl than math/rand provides.
+// but its good enough for hjkl and very fast. We use it to support a different
+// API for hjkl than math/rand provides.
 var lcg = uint64(time.Now().UnixNano())
 
 // Seed seeds the pseudo-random number generator.
@@ -48,12 +48,9 @@ func Range(a, b int) int {
 
 // Float64 gets a pseudo-random float64 in [0, 1).
 func Float64() float64 {
-	for {
-		f := float64(Int()) / (1 << 63)
-		if f < 1 {
-			return f
-		}
-	}
+	// Floating point numbers do not have a uniform distribution of values. We
+	// get around this by only working with the 53-bit mantissa.
+	return float64(Uint64()>>11) / (1 << 53)
 }
 
 // Chance gets a pseudo-random bool which is true with probability p. It
