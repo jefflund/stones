@@ -7,6 +7,27 @@ import (
 	"testing"
 )
 
+type Hello struct{}
+
+func (Hello) Update(ks []Key) error {
+	if len(ks) > 0 {
+		return Termination
+	}
+	return nil
+}
+
+func (Hello) Draw(c Canvas) {
+	for i, ch := range "Hello, World!" {
+		c.Blit(Vec(i, 0), Ch(ch))
+	}
+}
+
+func ExampleRun() {
+	if err := Run(Hello{}); err != nil {
+		panic(err)
+	}
+}
+
 type MockGame struct {
 	UpdateFn func([]Key) error
 	DrawFn   func(Canvas)
