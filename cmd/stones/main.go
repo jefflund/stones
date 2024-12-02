@@ -29,10 +29,7 @@ func NewGame() *Game {
 		return t.Pass && t.Occupant == nil
 	}
 
-	hero := rl.NewMob(hjkl.Ch('@'))
-	hero.AddComponent(rl.EventProcessor(func(m *rl.Mob, v *tui.NameQuery) {
-		v.Response = "you"
-	}))
+	hero := habilis.NewHero()
 	rl.PlaceMob(hero, rand.Select(tiles, open))
 
 	for i := 0; i < 20; i++ {
@@ -43,10 +40,6 @@ func NewGame() *Game {
 	log := tui.NewLog(hjkl.Vec(50, 1), hjkl.Vec(29, 22))
 	hero.AddComponent(rl.ComponentFunc(func(m *rl.Mob, v rl.Event) {
 		switch v := v.(type) {
-		case *rl.CollideEvent:
-			m.Handle(tui.Log("%s <collide> with %o", m, v.Obstacle))
-		case *rl.BumpEvent:
-			m.Handle(tui.Log("%s <bump> %o", m, v.Bumped))
 		case *tui.LogEvent:
 			log.Update(v.Message)
 		}

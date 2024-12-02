@@ -51,3 +51,17 @@ var Bestiary = []BestiaryEntry{
 		},
 	},
 }
+
+// NewHero creates a new Mob to represent the player.
+func NewHero() *rl.Mob {
+	entry := BestiaryEntry{
+		"you",
+		hjkl.Ch('@'),
+		[]CircleEntry{
+			{"Core", StoneCore, 4},
+			{"Rogok", StoneDmg, 1},
+			{"Warrior", StoneMelee, 1},
+		},
+	}
+	return entry.New()
+}
