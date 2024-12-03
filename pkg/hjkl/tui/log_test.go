@@ -21,7 +21,7 @@ func TestLog(t *testing.T) {
 	mammoth := &Obj{"mammoth"}
 	tiger := &rl.Mob{}
 	tiger.AddComponent(rl.EventProcessor(func(m *rl.Mob, v *NameQuery) {
-		v.Response = "tiger"
+		v.Name = "tiger"
 	}))
 
 	cases := []struct {

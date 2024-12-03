@@ -38,6 +38,17 @@ func EventProcessor[V Event](f func(m *Mob, v *V)) ComponentFunc {
 	})
 }
 
+// Query is an Event with a response.
+type Query[T any] interface {
+	Response() T
+}
+
+// Send has a Mob handle a Query, then returns the Query response.
+func Send[T any](m *Mob, q Query[T]) T {
+	m.Handle(q)
+	return q.Response()
+}
+
 // Mob is a game object which occupies Tile.
 type Mob struct {
 	Face hjkl.Glyph

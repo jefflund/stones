@@ -11,7 +11,12 @@ import (
 
 // NameQuery is an Event querying a Mob for its string name.
 type NameQuery struct {
-	Response string
+	Name string
+}
+
+// Response impoements Query for NameQuery.
+func (q *NameQuery) Response() string {
+	return q.Name
 }
 
 // LogEvent is an Event containg a log message.
@@ -136,10 +141,8 @@ var (
 // getArgstr converts an arbitrary argument to a string.
 func getArgstr(arg any) string {
 	if m, ok := arg.(*rl.Mob); ok {
-		q := NameQuery{}
-		m.Handle(&q)
-		if q.Response != "" {
-			return q.Response
+		if name := rl.Send(m, &NameQuery{}); name != "" {
+			return name
 		}
 	}
 	return fmt.Sprint(arg)

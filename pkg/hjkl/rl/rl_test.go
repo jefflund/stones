@@ -104,3 +104,22 @@ func TestPlaceMob(t *testing.T) {
 		t.Error("PlaceMob failed to set dst.Occupant")
 	}
 }
+
+type TestQuery struct {
+	Test string
+}
+
+func (q *TestQuery) Response() string {
+	return q.Test
+}
+
+func TestSend(t *testing.T) {
+	m := &Mob{}
+	expected := "testing123"
+	m.AddComponent(EventProcessor(func(m *Mob, q *TestQuery) {
+		q.Test = expected
+	}))
+	if actual := Send(m, &TestQuery{}); actual != expected {
+		t.Error("Send failed to get expected response")
+	}
+}

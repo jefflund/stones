@@ -47,7 +47,7 @@ type Skin struct {
 func (s *Skin) Process(m *rl.Mob, v rl.Event) {
 	switch v := v.(type) {
 	case *tui.NameQuery:
-		v.Response = s.Name
+		v.Name = s.Name
 	case *rl.BumpEvent:
 		m.Handle(tui.Log("%s <bump> %o", m, v.Bumped))
 	case *rl.CollideEvent:
