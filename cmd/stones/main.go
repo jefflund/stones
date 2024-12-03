@@ -16,7 +16,8 @@ type Game struct {
 }
 
 func NewGame() *Game {
-	tiles := gen.GenTileGrid(48, 22, func(o hjkl.Vector) *rl.Tile {
+	// TODO: Add computed constants for the various widget dimensions.
+	tiles := gen.GenTileGrid(43, 22, func(o hjkl.Vector) *rl.Tile {
 		t := rl.NewTile(o)
 		if rand.Chance(0.1) {
 			ch := rand.Choice([]rune{'%', '%', '&', '|'})
@@ -37,7 +38,7 @@ func NewGame() *Game {
 		rl.PlaceMob(mob, rand.Select(tiles, open))
 	}
 
-	log := tui.NewLog(hjkl.Vec(50, 1), hjkl.Vec(29, 22))
+	log := tui.NewLog(hjkl.Vec(45, 1), hjkl.Vec(34, 22))
 	hero.AddComponent(rl.ComponentFunc(func(m *rl.Mob, v rl.Event) {
 		switch v := v.(type) {
 		case *tui.LogEvent:
@@ -46,9 +47,9 @@ func NewGame() *Game {
 	}))
 
 	screen := tui.TUI{
-		tui.NewBorder(hjkl.Vec(0, 0), hjkl.Vec(50, 24)),
-		tui.NewTiles(hjkl.Vec(1, 1), hjkl.Vec(48, 22), tiles),
-		tui.NewBorder(hjkl.Vec(49, 0), hjkl.Vec(31, 24)),
+		tui.NewBorder(hjkl.Vec(0, 0), hjkl.Vec(45, 24)),
+		tui.NewTiles(hjkl.Vec(1, 1), hjkl.Vec(43, 22), tiles),
+		tui.NewBorder(hjkl.Vec(44, 0), hjkl.Vec(36, 24)),
 		log,
 	}
 

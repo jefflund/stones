@@ -2,6 +2,7 @@
 package habilis
 
 import (
+	"github.com/jefflund/stones/pkg/hjkl/math/rand"
 	"github.com/jefflund/stones/pkg/hjkl/rl"
 	"github.com/jefflund/stones/pkg/hjkl/tui"
 )
@@ -37,6 +38,27 @@ func (c *Circle) Matches(t Stone) bool {
 	return c.Stone&t == t
 }
 
+// CountQuery is an Event querying a Mob for the current count of a Stone.
+type CountQuery struct {
+	Stone Stone
+	Count int
+}
+
+// Response implements Query for CountQuery.
+func (q *CountQuery) Response() int {
+	return q.Count
+}
+
+// RollQuery is an Event querying a Mob for a core roll.
+type RollQuery struct {
+	Roll int
+}
+
+// Response implements Query for RollQuery.
+func (q *RollQuery) Response() int {
+	return q.Roll
+}
+
 // Skin represents a character as a collection of Circle.
 type Skin struct {
 	Name    string
@@ -48,10 +70,31 @@ func (s *Skin) Process(m *rl.Mob, v rl.Event) {
 	switch v := v.(type) {
 	case *tui.NameQuery:
 		v.Name = s.Name
+	case *CountQuery:
+		v.Count = s.Count(v.Stone)
+	case *RollQuery:
+		v.Roll = s.Roll()
 	case *rl.BumpEvent:
-		m.Handle(tui.Log("%s <bump> %o", m, v.Bumped))
+		Melee(m, v.Bumped)
 	case *rl.CollideEvent:
 		m.Handle(tui.Log("%s <collide> with %o", m, string(v.Obstacle.Face.Ch)))
+	}
+}
+
+func Melee(a, b *rl.Mob) {
+	roll := rl.Send(a, &RollQuery{}) - rl.Send(b, &RollQuery{})
+	tohit := rl.Send(a, &CountQuery{Stone: StoneHit})
+	toevs := rl.Send(b, &CountQuery{Stone: StoneEvs})
+	if hit := roll + tohit - toevs; hit > 0 {
+		todmg := rl.Send(a, &CountQuery{Stone: StoneDmg})
+		toarm := rl.Send(b, &CountQuery{Stone: StoneArm})
+		if dmg := roll + todmg - toarm; dmg > 0 {
+			a.Handle(tui.Log("%s <hit> %o for %x", a, b, dmg))
+		} else {
+			a.Handle(tui.Log("%s <graze> %o", a, b))
+		}
+	} else {
+		a.Handle(tui.Log("%s <miss> %o", a, b))
 	}
 }
 
@@ -66,13 +109,7 @@ func (s *Skin) Count(t Stone) int {
 	return count
 }
 
-// Count gets the maximum count of a Stone type on Skin.
-func (s *Skin) MaxCount(t Stone) int {
-	count := 0
-	for _, c := range s.Circles {
-		if c.Matches(t) {
-			count += c.MaxCount
-		}
-	}
-	return count
+// Roll makes a uniform random core roll for the Skin.
+func (s *Skin) Roll() int {
+	return rand.Range(0, s.Count(StoneCore))
 }
