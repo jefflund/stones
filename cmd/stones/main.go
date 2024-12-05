@@ -9,9 +9,12 @@ import (
 	"github.com/jefflund/stones/pkg/hjkl/tui"
 )
 
+type TriggerWander struct{}
+
 type Game struct {
 	tui.TUI
 	Hero  *rl.Mob
+	Mobs  []*rl.Mob
 	Tiles []*rl.Tile
 }
 
@@ -41,9 +44,10 @@ func NewGame() *Game {
 	hero := habilis.NewHero()
 	rl.PlaceMob(hero, rand.Select(tiles, open))
 
-	for i := 0; i < 20; i++ {
-		mob := rand.Choice(habilis.Bestiary).New()
-		rl.PlaceMob(mob, rand.Select(tiles, open))
+	mobs := make([]*rl.Mob, 20)
+	for i := 0; i < len(mobs); i++ {
+		mobs[i] = rand.Choice(habilis.Bestiary).New()
+		rl.PlaceMob(mobs[i], rand.Select(tiles, open))
 	}
 
 	log := tui.NewLog(hjkl.Vec(MAP_COLS+2, 1), hjkl.Vec(LOG_COLS, LOG_ROWS))
@@ -61,7 +65,7 @@ func NewGame() *Game {
 		log,
 	}
 
-	return &Game{screen, hero, tiles}
+	return &Game{screen, hero, mobs, tiles}
 }
 
 func (g *Game) Update(ks []hjkl.Key) error {
@@ -72,6 +76,14 @@ func (g *Game) Update(ks []hjkl.Key) error {
 		if delta, ok := hjkl.VIKeyMap[k]; ok {
 			if g.Hero.Pos.Adjacent[delta] != nil {
 				g.Hero.Move(delta)
+			}
+		}
+	}
+	if len(ks) > 0 {
+		for _, m := range g.Mobs {
+			delta := rand.Choice(hjkl.Dirs8)
+			if m.Pos.Adjacent[delta] != nil {
+				m.Move(delta)
 			}
 		}
 	}
