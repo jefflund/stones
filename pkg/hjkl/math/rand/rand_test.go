@@ -296,3 +296,29 @@ func TestSelect_Invalid(t *testing.T) {
 	}()
 	Select([]int{1, 2, 3}, func(x int) bool { return false })
 }
+
+func TestIntn_Cycles(t *testing.T) {
+	const N = 8
+	for _, seed := range Seeds {
+		t.Run(fmt.Sprintf("Cycles (seed: %x)", seed), func(t *testing.T) {
+			Seed(seed)
+			cycle := make([]int, N)
+			for i := 0; i < N; i++ {
+				cycle[i] = Intn(N)
+			}
+
+			accept := false
+			for n := 0; n < 10; n++ {
+				for i := 0; i < N; i++ {
+					if Intn(N) != cycle[i] {
+						accept = true
+					}
+				}
+			}
+
+			if !accept {
+				t.Error("Found repeated Intn cycle")
+			}
+		})
+	}
+}

@@ -1,28 +1,31 @@
 // Package rand provides pseudo-random number generation.
 package rand
 
-import "time"
+import (
+	"time"
+)
 
-// lcg is a linear congruential generator. This isn't a good generator per se,
-// but its good enough for hjkl and very fast. We use it to support a different
-// API for hjkl than math/rand provides.
-var lcg = uint64(time.Now().UnixNano())
+// sm64 is a SplitMix64 pseudo-random number generator. This isn't a good
+// generator per se, but is good enough for hjkl and very fast.
+var sm64 = uint64(time.Now().UnixNano())
 
 // Seed seeds the pseudo-random number generator.
 func Seed(seed uint64) {
-	lcg = seed
+	sm64 = seed
 }
 
 // Seed seeds the pseudo-random number generator using the current time.
 func SeedTime() {
-	lcg = uint64(time.Now().UnixNano())
+	sm64 = uint64(time.Now().UnixNano())
 }
 
 // Uint64 gets a pseudo-random uint64.
 func Uint64() uint64 {
-	// Constants borrowed from MMIX by Donald Knuth.
-	lcg = lcg*6364136223846793005 + 1442695040888963407
-	return lcg
+	sm64 += 0x9e3779b97f4a7c15
+	x := sm64
+	x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9
+	x = (x ^ (x >> 27)) * 0x94d049bb133111eb
+	return x ^ (x >> 31)
 }
 
 // Int gets a positive pseudo-random int.
