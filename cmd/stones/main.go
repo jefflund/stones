@@ -9,8 +9,6 @@ import (
 	"github.com/jefflund/stones/pkg/hjkl/tui"
 )
 
-type TriggerWander struct{}
-
 type Game struct {
 	tui.TUI
 	Hero  *rl.Mob
