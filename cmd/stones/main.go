@@ -77,13 +77,13 @@ func (g *Game) Update(ks []hjkl.Key) error {
 		if k == 'q' || k == hjkl.KeyEsc {
 			return hjkl.Termination
 		}
-		if delta, ok := hjkl.VIKeyMap[k]; ok {
-			g.Hero.Move(delta)
-		}
 	}
+
+	trigger := &habilis.ActTrigger{Keys: ks}
+	g.Hero.Handle(trigger)
 	if len(ks) > 0 {
 		for _, m := range g.Mobs {
-			m.Move(rand.Choice(hjkl.Dirs8))
+			m.Handle(trigger)
 		}
 	}
 	return nil

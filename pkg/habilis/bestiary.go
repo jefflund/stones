@@ -32,6 +32,7 @@ func (b BestiaryEntry) New() *rl.Mob {
 	}
 	mob := rl.NewMob(b.Face)
 	mob.AddComponent(&Skin{b.Name, circles})
+	mob.AddComponent(rl.EventProcessor(Wander))
 	return mob
 }
 
@@ -54,14 +55,14 @@ var Bestiary = []BestiaryEntry{
 
 // NewHero creates a new Mob to represent the player.
 func NewHero() *rl.Mob {
-	entry := BestiaryEntry{
-		"you",
-		hjkl.Ch('@'),
-		[]CircleEntry{
-			{"Core", StoneCore, 4},
-			{"Rogok", StoneDmg, 1},
-			{"Warrior", StoneMelee, 1},
+	hero := rl.NewMob(hjkl.Ch('@'))
+	hero.AddComponent(&Skin{
+		"you", []*Circle{
+			{"Core", StoneCore, 4, 4},
+			{"Rogok", StoneDmg, 1, 1},
+			{"Warrior", StoneMelee, 1, 1},
 		},
-	}
-	return entry.New()
+	})
+	hero.AddComponent(rl.EventProcessor(Contoller))
+	return hero
 }
