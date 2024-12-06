@@ -32,10 +32,14 @@ func NewGame() *Game {
 		t := rl.NewTile(o)
 		if rand.Chance(0.1) {
 			ch := rand.Choice([]rune{'%', '%', '&', '|'})
-			t.Face = hjkl.Glyph{Ch: ch, Fg: hjkl.ColorGreen}
+			t.Face = hjkl.ChFg(ch, hjkl.ColorGreen)
 			t.Pass = false
 		}
 		return t
+	})
+	gen.GenFence(tiles, func(t *rl.Tile) {
+		t.Pass = false
+		t.Face = hjkl.ChFg('#', hjkl.ColorLightBlack)
 	})
 	open := func(t *rl.Tile) bool {
 		return t.Pass && t.Occupant == nil
@@ -74,17 +78,12 @@ func (g *Game) Update(ks []hjkl.Key) error {
 			return hjkl.Termination
 		}
 		if delta, ok := hjkl.VIKeyMap[k]; ok {
-			if g.Hero.Pos.Adjacent[delta] != nil {
-				g.Hero.Move(delta)
-			}
+			g.Hero.Move(delta)
 		}
 	}
 	if len(ks) > 0 {
 		for _, m := range g.Mobs {
-			delta := rand.Choice(hjkl.Dirs8)
-			if m.Pos.Adjacent[delta] != nil {
-				m.Move(delta)
-			}
+			m.Move(rand.Choice(hjkl.Dirs8))
 		}
 	}
 	return nil
