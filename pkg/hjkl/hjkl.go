@@ -1,3 +1,4 @@
+// Package hjkl is a terminal game engine.
 package hjkl
 
 import (
@@ -14,14 +15,51 @@ type Game interface {
 // Termination is a special error indicating normal game termination.
 var Termination = errors.New("Termination")
 
+// RunConfig stores options for Run.
+type RunConfig struct {
+	Terminal Terminal
+	TPS      int
+}
+
+// DefaultRunConfig creates a RunConfig with default settings.
+func DefaultRunConfig() *RunConfig {
+	return &RunConfig{
+		Terminal: TermboxTerminal{},
+		TPS:      20,
+	}
+}
+
+// RunOption is a function which mutates a RunConfig for Run.
+type RunOption func(*RunConfig)
+
+// WithTerm gets a RunOption which sets the Terminal of a RunConfig.
+func WithTerm(t Terminal) RunOption {
+	return func(r *RunConfig) {
+		r.Terminal = t
+	}
+}
+
+// WithTPS gets a RunOption which sets the TPS of a RunConfig.
+func WithTPS(tps int) RunOption {
+	return func(r *RunConfig) {
+		r.TPS = tps
+	}
+}
+
 // Run runs a game. Each tick Run calls both Update and Draw. Update updates
 // the game state using the keypresses since the last tick. If Update returns
 // nil, Run will continue execution by calling Draw. If Update returns
 // Termination, Run will terminate without error. All other non-nil errors
 // result in Run terminating with an error.
-func Run(g Game) error {
+func Run(g Game, opts ...RunOption) error {
+	// Apply config options.
+	config := DefaultRunConfig()
+	for _, opt := range opts {
+		opt(config)
+	}
+
 	// Setup I/O via Terminal.
-	term := TermboxTerminal{}
+	term := config.Terminal
 	if err := term.Init(); err != nil {
 		return err
 	}
@@ -29,7 +67,7 @@ func Run(g Game) error {
 	defer term.Done()
 
 	// Setup a ticker to trigger Update and Draw.
-	ticker := time.NewTicker(time.Second / time.Duration(20))
+	ticker := time.NewTicker(time.Second / time.Duration(config.TPS))
 	defer ticker.Stop()
 
 	// Slice to accumulate keypresses each tick.
