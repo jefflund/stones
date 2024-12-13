@@ -7,28 +7,26 @@ const (
 	ROWS = 24
 )
 
-var (
-	WALL  = hjkl.Ch('#')
-	FLOOR = hjkl.Ch('.')
-)
-
 type Game struct {
-	Hero  hjkl.Vector
-	Level map[hjkl.Vector]hjkl.Glyph
+	Hero  *hjkl.Mob
+	Level map[hjkl.Vector]*hjkl.Tile
 }
 
 func NewGame() *Game {
-	hero := hjkl.Vec(40, 12)
-	level := make(map[hjkl.Vector]hjkl.Glyph)
+	hero := hjkl.NewMob(hjkl.Ch('@'))
+	level := make(map[hjkl.Vector]*hjkl.Tile)
 	for x := 0; x < COLS; x++ {
 		for y := 0; y < ROWS; y++ {
-			tile := FLOOR
+			tile := hjkl.NewTile(hjkl.Vec(x, y))
 			if x == 0 || x == COLS-1 || y == 0 || y == ROWS-1 {
-				tile = WALL
+				tile.Face = hjkl.Ch('#')
+				tile.Pass = false
 			}
-			level[hjkl.Vec(x, y)] = tile
+			level[tile.Offset] = tile
 		}
 	}
+	hero.Pos = level[hjkl.Vec(40, 12)]
+	hero.Pos.Occupant = hero
 	return &Game{hero, level}
 }
 
@@ -48,17 +46,19 @@ func (g *Game) Update(ks []hjkl.Key) error {
 			delta = hjkl.Vec(1, 0)
 		}
 	}
-	if dst := g.Hero.Add(delta); g.Level[dst] == FLOOR {
-		g.Hero = dst
+	if dst := g.Level[g.Hero.Pos.Offset.Add(delta)]; dst.Pass {
+		g.Hero.Pos.Occupant = nil
+		dst.Occupant = g.Hero
+		g.Hero.Pos = dst
 	}
 	return nil
 }
 
 func (g *Game) Draw(c hjkl.Canvas) {
 	for v, g := range g.Level {
-		c.Blit(v, g)
+		c.Blit(v, g.Face)
 	}
-	c.Blit(g.Hero, hjkl.Ch('@'))
+	c.Blit(g.Hero.Pos.Offset, g.Hero.Face)
 }
 
 func main() {
