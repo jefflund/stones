@@ -25,6 +25,18 @@ func (a Vector) Neg() Vector {
 	return Vector{-a.X, -a.Y}
 }
 
+// CompassDirs contains the eight point compass directions as Vector.
+var CompassDirs = []Vector{
+	{-1, -1},
+	{-1, 0},
+	{-1, 1},
+	{0, -1},
+	{0, 1},
+	{1, -1},
+	{1, 0},
+	{1, 1},
+}
+
 // Key represents a single keypress.
 type Key rune
 
@@ -34,6 +46,18 @@ const (
 	KeyEnter Key = 0x0D
 	KeyCtrlC Key = 0x03
 )
+
+// VIKeys is a mapping of VI Key to CompassDirs.
+var VIKeyDirs = map[Key]Vector{
+	'h': {-1, 0},
+	'j': {0, 1},
+	'k': {0, -1},
+	'l': {1, 0},
+	'n': {1, 1},
+	'b': {-1, 1},
+	'u': {1, -1},
+	'y': {-1, -1},
+}
 
 // Color describes the color of a Glyph as a uint8 ANSI 256 color code.
 type Color uint8
