@@ -30,6 +30,21 @@ func NewTile(offset Vector) *Tile {
 	}
 }
 
+// PlaceMob places a Mob on a Tile.
+func PlaceMob(m *Mob, t *Tile) {
+	t.Occupant = m
+	m.Pos = t
+}
+
+// MoveMob moves a Mob by a Vector delta.
+func MoveMob(m *Mob, delta Vector) {
+	if dst, ok := m.Pos.Adjacent[delta]; ok {
+		m.Pos.Occupant = nil
+		dst.Occupant = m
+		m.Pos = dst
+	}
+}
+
 // GenTileGrid creates a new eight-connected grid of Tile.
 func GenTileGrid(cols, rows int, f func(Vector) *Tile) []*Tile {
 	grid := make(map[Vector]*Tile)

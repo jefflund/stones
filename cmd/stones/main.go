@@ -25,8 +25,11 @@ func NewGame() *Game {
 		t.Face = hjkl.Ch('#')
 		t.Pass = false
 	})
-	hero.Pos = level[0]
-	hero.Pos.Occupant = hero
+	hjkl.PlaceMob(hero, level[0])
+	hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed)), level[0])
+	hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed)), level[1])
+	hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed)), level[2])
+	hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('U', hjkl.ColorLightRed)), level[3])
 	return &Game{hero, level}
 }
 
@@ -37,11 +40,7 @@ func (g *Game) Update(ks []hjkl.Key) error {
 			return hjkl.Termination
 		default:
 			if delta, ok := hjkl.VIKeyDirs[k]; ok {
-				if dst := g.Hero.Pos.Adjacent[delta]; ok && dst.Pass {
-					g.Hero.Pos.Occupant = nil
-					dst.Occupant = g.Hero
-					g.Hero.Pos = dst
-				}
+				hjkl.MoveMob(g.Hero, delta)
 			}
 		}
 	}
@@ -50,9 +49,12 @@ func (g *Game) Update(ks []hjkl.Key) error {
 
 func (g *Game) Draw(c hjkl.Canvas) {
 	for _, g := range g.Level {
-		c.Blit(g.Offset, g.Face)
+		if g.Occupant == nil {
+			c.Blit(g.Offset, g.Face)
+		} else {
+			c.Blit(g.Offset, g.Occupant.Face)
+		}
 	}
-	c.Blit(g.Hero.Pos.Offset, g.Hero.Face)
 }
 
 func main() {
