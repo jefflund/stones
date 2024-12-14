@@ -40,7 +40,7 @@ func (g *Game) Update(ks []hjkl.Key) error {
 			return hjkl.Termination
 		default:
 			if delta, ok := hjkl.VIKeyDirs[k]; ok {
-				hjkl.MoveMob(g.Hero, delta)
+				g.Hero.Handle(&hjkl.Move{Delta: delta})
 			}
 		}
 	}
@@ -48,12 +48,8 @@ func (g *Game) Update(ks []hjkl.Key) error {
 }
 
 func (g *Game) Draw(c hjkl.Canvas) {
-	for _, g := range g.Level {
-		if g.Occupant == nil {
-			c.Blit(g.Offset, g.Face)
-		} else {
-			c.Blit(g.Offset, g.Occupant.Face)
-		}
+	for _, t := range g.Level {
+		c.Blit(t.Offset, hjkl.Get(t, &hjkl.Face{}))
 	}
 }
 

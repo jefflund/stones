@@ -1,5 +1,64 @@
 package hjkl
 
+// Event is a message handled by Entity.
+type Event any
+
+// Entity is a game object which handles Event.
+type Entity interface {
+	Handle(Event)
+}
+
+// Getter is an Event which gets a value.
+type Getter[T any] interface {
+	Get() T
+}
+
+// Field allows an Event to function as a Getter.
+type Field[T any] struct {
+	Value T
+}
+
+// Get gets the Field value.
+func (v Field[T]) Get() T {
+	return v.Value
+}
+
+// Get sends a Getter Event to an Entity, then returns the value.
+func Get[T any](e Entity, v Getter[T]) T {
+	e.Handle(v)
+	return v.Get()
+}
+
+// Face is an Event which gets a Glyph face.
+type Face struct {
+	Field[Glyph]
+}
+
+// SetPos is an Event updating a Tile position.
+type SetPos struct {
+	Value *Tile
+}
+
+// SetOccupant is an Event updating a Mob occupant.
+type SetOccupant struct {
+	Value *Mob
+}
+
+// Move is an Event which triggers movement.
+type Move struct {
+	Delta Vector
+}
+
+// Bump is an Event sent upon bumping a Mob.
+type Bump struct {
+	Bumped *Mob
+}
+
+// Collide is an Event sent upon colliding with a Tile.
+type Collide struct {
+	Obstacle *Tile
+}
+
 // Mob represents a creature capable of occupying Tile.
 type Mob struct {
 	Face Glyph
@@ -9,6 +68,28 @@ type Mob struct {
 // NewMob constructs a new Mob with the given Glyph face.
 func NewMob(face Glyph) *Mob {
 	return &Mob{Face: face}
+}
+
+// Handle implements Entity for Mob.
+func (e *Mob) Handle(v Event) {
+	switch v := v.(type) {
+	case *Face:
+		v.Value = e.Face
+	case *SetPos:
+		e.Pos = v.Value
+	case *Move:
+		if dst, ok := e.Pos.Adjacent[v.Delta]; ok {
+			if dst.Occupant != nil {
+				e.Handle(&Bump{dst.Occupant})
+			} else if !dst.Pass {
+				e.Handle(&Collide{dst})
+			} else {
+				e.Pos.Handle(&SetOccupant{nil})
+				dst.Handle(&SetOccupant{e})
+				e.Handle(&SetPos{dst})
+			}
+		}
+	}
 }
 
 // Tile represents a single square in the game mpa.
@@ -30,19 +111,23 @@ func NewTile(offset Vector) *Tile {
 	}
 }
 
+// Handle implements Entity for Tile.
+func (e *Tile) Handle(v Event) {
+	switch v := v.(type) {
+	case *Face:
+		v.Value = e.Face
+		if e.Occupant != nil {
+			e.Occupant.Handle(v)
+		}
+	case *SetOccupant:
+		e.Occupant = v.Value
+	}
+}
+
 // PlaceMob places a Mob on a Tile.
 func PlaceMob(m *Mob, t *Tile) {
 	t.Occupant = m
 	m.Pos = t
-}
-
-// MoveMob moves a Mob by a Vector delta.
-func MoveMob(m *Mob, delta Vector) {
-	if dst, ok := m.Pos.Adjacent[delta]; ok {
-		m.Pos.Occupant = nil
-		dst.Occupant = m
-		m.Pos = dst
-	}
 }
 
 // GenTileGrid creates a new eight-connected grid of Tile.
