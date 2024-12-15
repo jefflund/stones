@@ -8,6 +8,38 @@ type Entity interface {
 	Handle(Event)
 }
 
+// Component handles Event for Entity.
+type Component[E Entity] interface {
+	Handle(E, Event)
+}
+
+// ComponentFunc is a function which acts as a Component.
+type ComponentFunc[E Entity] func(E, Event)
+
+// Handle calls the underlying function.
+func (c ComponentFunc[E]) Handle(e E, v Event) {
+	c(e, v)
+}
+
+// ComponentSlice is a Component composed of other Component.
+type ComponentSlice[E Entity] []Component[E]
+
+// Handle has each constiutent Component handle the Event.
+func (s ComponentSlice[E]) Handle(e E, v Event) {
+	for _, c := range s {
+		c.Handle(e, v)
+	}
+}
+
+// Handler creates a ComponentFunc which handles a specific Event type.
+func Handler[E Entity, V Event](f func(E, V)) ComponentFunc[E] {
+	return ComponentFunc[E](func(e E, v Event) {
+		if v, ok := v.(V); ok {
+			f(e, v)
+		}
+	})
+}
+
 // Getter is an Event which gets a value.
 type Getter[T any] interface {
 	Get() T
@@ -63,6 +95,8 @@ type Collide struct {
 type Mob struct {
 	Face Glyph
 	Pos  *Tile
+
+	Components ComponentSlice[*Mob]
 }
 
 // NewMob constructs a new Mob with the given Glyph face.
@@ -90,6 +124,8 @@ func (e *Mob) Handle(v Event) {
 			}
 		}
 	}
+
+	e.Components.Handle(e, v)
 }
 
 // Tile represents a single square in the game mpa.
@@ -99,6 +135,8 @@ type Tile struct {
 	Pass     bool
 	Occupant *Mob
 	Adjacent map[Vector]*Tile
+
+	Components ComponentSlice[*Tile]
 }
 
 // NewTile constructs a new Tile with the given Vector offset.
@@ -122,6 +160,8 @@ func (e *Tile) Handle(v Event) {
 	case *SetOccupant:
 		e.Occupant = v.Value
 	}
+
+	e.Components.Handle(e, v)
 }
 
 // PlaceMob places a Mob on a Tile.

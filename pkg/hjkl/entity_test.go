@@ -1,11 +1,36 @@
 package hjkl
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestNewMob(t *testing.T) {
 	m := NewMob(Ch('@'))
 	if m.Face != Ch('@') {
 		t.Error("NewMob produced incorrect Face")
+	}
+}
+
+type TestGetter struct {
+	Field[string]
+}
+
+func TestGet(t *testing.T) {
+	m := NewMob(Glyph{})
+	var received Event
+	m.Components = append(m.Components, Handler(func(e *Mob, v *TestGetter) {
+		received = v
+		v.Value = "foobar"
+	}))
+	v := &TestGetter{}
+	if got := Get(m, v); got != "foobar" {
+		t.Errorf("Get(Mob, TestGetter) returned wrong value %s", got)
+	}
+	if received != v {
+		t.Error("Get(mob, TestGetter) failed to send Event")
+	}
+	if v.Value != "foobar" {
+		t.Error("Get(Mob, TestGetter) failed to update Event")
 	}
 }
 
@@ -25,15 +50,30 @@ func TestMob_SetPos(t *testing.T) {
 	}
 }
 
+type LogEntry struct {
+	Entity any
+	Event  any
+}
+
 func TestMob_Bump(t *testing.T) {
 	m := NewMob(Ch('@'))
 	n := NewMob(Ch('D'))
 	a := NewTile(Vec(1, 1))
-	b := NewTile(Vec(2, 0))
-	a.Adjacent[Vec(2, 1)] = b
+	b := NewTile(Vec(2, 1))
+	a.Adjacent[Vec(1, 0)] = b
 	PlaceMob(m, a)
 	PlaceMob(n, b)
-	m.Handle(&Move{Vec(2, 1)})
+
+	var got *Bump
+	m.Components = append(m.Components, Handler(func(e *Mob, v *Bump) {
+		got = v
+	}))
+
+	m.Handle(&Move{Vec(1, 0)})
+
+	if got == nil || got.Bumped != n {
+		t.Error("Mob.Handle(Move) sent incorrect Bump")
+	}
 	if a.Occupant != m {
 		t.Error("Mob.Handle(Move) incorrectly set old Occupant")
 	}
@@ -52,7 +92,17 @@ func TestMob_Collide(t *testing.T) {
 	a.Adjacent[Vec(2, 1)] = b
 	PlaceMob(m, a)
 	b.Pass = false
+
+	var got *Collide
+	m.Components = append(m.Components, Handler(func(e *Mob, v *Collide) {
+		got = v
+	}))
+
 	m.Handle(&Move{Vec(2, 1)})
+
+	if got == nil || got.Obstacle != b {
+		t.Error("Mob.Handle(Move) send incorrect Collide")
+	}
 	if a.Occupant != m {
 		t.Error("Mob.Handle(Move) incorrectly set old Occupant")
 	}
@@ -70,7 +120,31 @@ func TestMob_Move(t *testing.T) {
 	b := NewTile(Vec(2, 0))
 	a.Adjacent[Vec(2, 1)] = b
 	PlaceMob(m, a)
+
+	var gotA *SetOccupant
+	a.Components = append(a.Components, Handler(func(e *Tile, v *SetOccupant) {
+		gotA = v
+	}))
+	var gotB *SetOccupant
+	b.Components = append(b.Components, Handler(func(e *Tile, v *SetOccupant) {
+		gotB = v
+	}))
+	var gotM *SetPos
+	m.Components = append(m.Components, Handler(func(e *Mob, v *SetPos) {
+		gotM = v
+	}))
+
 	m.Handle(&Move{Vec(2, 1)})
+
+	if gotA == nil || gotA.Value != nil {
+		t.Error("Mob.Handle(Move) sent incorrect SetOccupant clear}")
+	}
+	if gotB == nil || gotB.Value != m {
+		t.Error("Mob.Handle(Move) sent incorrect SetOccupant update")
+	}
+	if gotM == nil || gotM.Value != b {
+		t.Error("Mob.Handle(Move) sent incorrect SetPos update")
+	}
 	if a.Occupant != nil {
 		t.Error("Mob.Handle(Move) failed to set old Occupant")
 	}
