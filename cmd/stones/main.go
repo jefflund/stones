@@ -7,13 +7,15 @@ import (
 )
 
 type Game struct {
+	hjkl.Screen
 	Hero  *hjkl.Mob
 	Level []*hjkl.Tile
 }
 
 func NewGame() *Game {
-	hero := hjkl.NewMob(hjkl.Ch('@'))
-	level := hjkl.GenTileGrid(80, 24, func(o hjkl.Vector) *hjkl.Tile {
+	cols, rows := 80, 24
+
+	level := hjkl.GenTileGrid(cols, rows, func(o hjkl.Vector) *hjkl.Tile {
 		t := hjkl.NewTile(o)
 		if rand.Float64() < 0.1 {
 			t.Face = hjkl.ChFg('%', hjkl.ColorGreen)
@@ -25,12 +27,18 @@ func NewGame() *Game {
 		t.Face = hjkl.Ch('#')
 		t.Pass = false
 	})
+
+	hero := hjkl.NewMob(hjkl.Ch('@'))
 	hjkl.PlaceMob(hero, level[0])
-	hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed)), level[0])
-	hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed)), level[1])
-	hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed)), level[2])
-	hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('U', hjkl.ColorLightRed)), level[3])
-	return &Game{hero, level}
+	for i := 1; i <= 5; i++ {
+		hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed)), level[i])
+	}
+
+	screen := hjkl.Screen{
+		hjkl.NewTilesWidget(hjkl.Vec(0, 0), hjkl.Vec(cols, rows), level),
+	}
+
+	return &Game{screen, hero, level}
 }
 
 func (g *Game) Update(ks []hjkl.Key) error {
@@ -45,12 +53,6 @@ func (g *Game) Update(ks []hjkl.Key) error {
 		}
 	}
 	return nil
-}
-
-func (g *Game) Draw(c hjkl.Canvas) {
-	for _, t := range g.Level {
-		c.Blit(t.Offset, hjkl.Get(t, &hjkl.Face{}))
-	}
 }
 
 func main() {
