@@ -18,7 +18,7 @@ type TestGetter struct {
 func TestGet(t *testing.T) {
 	m := NewMob(Glyph{})
 	var received Event
-	m.Components = append(m.Components, Handler(func(e *Mob, v *TestGetter) {
+	m.Components.Add(Handler(func(e *Mob, v *TestGetter) {
 		received = v
 		v.Value = "foobar"
 	}))
@@ -65,7 +65,7 @@ func TestMob_Bump(t *testing.T) {
 	PlaceMob(n, b)
 
 	var got *Bump
-	m.Components = append(m.Components, Handler(func(e *Mob, v *Bump) {
+	m.Components.Add(Handler(func(e *Mob, v *Bump) {
 		got = v
 	}))
 
@@ -94,7 +94,7 @@ func TestMob_Collide(t *testing.T) {
 	b.Pass = false
 
 	var got *Collide
-	m.Components = append(m.Components, Handler(func(e *Mob, v *Collide) {
+	m.Components.Add(Handler(func(e *Mob, v *Collide) {
 		got = v
 	}))
 
@@ -122,15 +122,15 @@ func TestMob_Move(t *testing.T) {
 	PlaceMob(m, a)
 
 	var gotA *SetOccupant
-	a.Components = append(a.Components, Handler(func(e *Tile, v *SetOccupant) {
+	a.Components.Add(Handler(func(e *Tile, v *SetOccupant) {
 		gotA = v
 	}))
 	var gotB *SetOccupant
-	b.Components = append(b.Components, Handler(func(e *Tile, v *SetOccupant) {
+	b.Components.Add(Handler(func(e *Tile, v *SetOccupant) {
 		gotB = v
 	}))
 	var gotM *SetPos
-	m.Components = append(m.Components, Handler(func(e *Mob, v *SetPos) {
+	m.Components.Add(Handler(func(e *Mob, v *SetPos) {
 		gotM = v
 	}))
 

@@ -24,6 +24,11 @@ func (c ComponentFunc[E]) Handle(e E, v Event) {
 // ComponentSlice is a Component composed of other Component.
 type ComponentSlice[E Entity] []Component[E]
 
+// Add appends a Component to the ComponentSlice.
+func (s *ComponentSlice[E]) Add(c Component[E]) {
+	*s = append(*s, c)
+}
+
 // Handle has each constiutent Component handle the Event.
 func (s ComponentSlice[E]) Handle(e E, v Event) {
 	for _, c := range s {
