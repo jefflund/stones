@@ -4,6 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/jefflund/stones/pkg/hjkl"
+	"github.com/jefflund/stones/pkg/rpg"
 )
 
 type Game struct {
@@ -29,9 +30,18 @@ func NewGame() *Game {
 	})
 
 	hero := hjkl.NewMob(hjkl.Ch('@'))
+	hero.Components.Add(&rpg.Stats{
+		Health: 10,
+		Damage: 2,
+	})
 	hjkl.PlaceMob(hero, level[0])
 	for i := 1; i <= 5; i++ {
-		hjkl.PlaceMob(hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed)), level[i])
+		mob := hjkl.NewMob(hjkl.ChFg('u', hjkl.ColorRed))
+		mob.Components.Add(&rpg.Stats{
+			Health: i,
+			Damage: 1,
+		})
+		hjkl.PlaceMob(mob, level[i])
 	}
 
 	screen := hjkl.Screen{
