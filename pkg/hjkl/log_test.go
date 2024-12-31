@@ -1,6 +1,7 @@
 package hjkl
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -55,9 +56,11 @@ func TestLog(t *testing.T) {
 		{"%s %v %o", []any{I, "", orc}, "I %!v(EMPTY) the orc."},
 		{"%s %v %o", []any{you, "hit", ""}, "You hit %!o(EMPTY)."},
 	}
-	for _, c := range cases {
-		if got := Log(c.Fmt, c.Args...); got != c.Want {
-			t.Errorf("Got: \"%s\", Wanted: \"%s\"", got, c.Want)
-		}
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("Case %d", i), func(t *testing.T) {
+			if got := Log(c.Fmt, c.Args...); got != c.Want {
+				t.Errorf("Got: \"%s\", Wanted: \"%s\"", got, c.Want)
+			}
+		})
 	}
 }
