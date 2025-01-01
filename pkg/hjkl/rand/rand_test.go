@@ -148,6 +148,44 @@ func TestChoice(t *testing.T) {
 	})
 }
 
+func TestFilteredChoice(t *testing.T) {
+	primes := []int{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47}
+	valid := make(map[int]bool)
+	for _, prime := range primes {
+		valid[prime] = true
+	}
+	exp := make([]int, 50)
+	for _, x := range primes {
+		exp[x] = 100
+	}
+	xs := make([]int, 50)
+	for i := 0; i < 50; i++ {
+		xs[i] = i
+	}
+	RunX2TestCases("FilteredChoice(xs)", t, exp, func() int {
+		return FilteredChoice(xs, func(x int) bool {
+			return valid[x]
+		})
+	})
+}
+
+func BenchmarkFilteredChoice_Rare(b *testing.B) {
+	const N = 10000000
+	const M = N / 10000
+
+	xs := make([]int, N)
+	for i := 0; i < len(xs); i++ {
+		xs[i] = i
+	}
+
+	b.ResetTimer()
+	for range b.N {
+		FilteredChoice(xs, func(x int) bool {
+			return x%M == 0
+		})
+	}
+}
+
 func TestInvalidArgs(t *testing.T) {
 	cases := []struct {
 		name string
@@ -158,7 +196,9 @@ func TestInvalidArgs(t *testing.T) {
 		{"Chance(-0.0001)", func() { Chance(-0.0001) }},
 		{"Chance(1.0001)", func() { Chance(1.0001) }},
 		{"Choice(nil)", func() { Choice[string](nil) }},
-		{"Choice([]int{})", func() { Choice([]int{}) }},
+		{"Choice(empty)", func() { Choice([]int{}) }},
+		{"FilteredChoice(empty)", func() { FilteredChoice([]int{}, func(int) bool { return true }) }},
+		{"FilteredChoice(invalid)", func() { FilteredChoice([]int{0, 1, 2, 3}, func(int) bool { return false }) }},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

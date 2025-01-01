@@ -66,3 +66,29 @@ func Choice[T any](xs []T) T {
 	}
 	return xs[Intn(n)]
 }
+
+// Choice returns a random element of a slice xs for which the filter function
+// f returns true. It panics if no such element exists in xs.
+func FilteredChoice[T any](xs []T, f func(T) bool) T {
+	// Try rejection sampling first. Assuming that the probability of a random
+	// element passing the filter is reasonable (i.e., above 0.01), rejection
+	// sampling will likely run in constant time.
+	for i := 0; i < 100; i++ {
+		if x := xs[Intn(len(xs))]; f(x) {
+			return x
+		}
+	}
+
+	// If rejection sampling fails, use a linear algorith to find every valid
+	// element and return one at random.
+	var valid []T
+	for _, x := range xs {
+		if f(x) {
+			valid = append(valid, x)
+		}
+	}
+	if len(valid) == 0 {
+		panic("No valid choices to FilteredChoice")
+	}
+	return valid[Intn(len(valid))]
+}
