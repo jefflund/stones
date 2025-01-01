@@ -1,3 +1,4 @@
+// Package rand provides pseudo-random number generation.
 package rand
 
 import "time"
@@ -55,4 +56,13 @@ func Chance(p float64) bool {
 		panic("Invalid argument to Chance")
 	}
 	return Float64() < p
+}
+
+// Choice returns a random element of a slice. It panics of len(xs) == 0.
+func Choice[T any](xs []T) T {
+	n := len(xs)
+	if n == 0 {
+		panic("Invalid argument to Choice")
+	}
+	return xs[Intn(n)]
 }

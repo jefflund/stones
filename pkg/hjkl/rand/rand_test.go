@@ -128,6 +128,26 @@ func TestChance_50(t *testing.T) {
 	})
 }
 
+func TestChoice(t *testing.T) {
+	mapping := map[rune]int{
+		'%': 0,
+		'.': 1,
+		',': 2,
+		'&': 3,
+		';': 4,
+		':': 5,
+	}
+	xs := make([]rune, len(mapping))
+	exp := make([]int, len(mapping))
+	for x, i := range mapping {
+		xs[i] = x
+		exp[i] = 1000
+	}
+	RunX2TestCases("Choice(xs)", t, exp, func() int {
+		return mapping[Choice(xs)]
+	})
+}
+
 func TestInvalidArgs(t *testing.T) {
 	cases := []struct {
 		name string
@@ -137,6 +157,8 @@ func TestInvalidArgs(t *testing.T) {
 		{"Intn(-1)", func() { Intn(-1) }},
 		{"Chance(-0.0001)", func() { Chance(-0.0001) }},
 		{"Chance(1.0001)", func() { Chance(1.0001) }},
+		{"Choice(nil)", func() { Choice[string](nil) }},
+		{"Choice([]int{})", func() { Choice([]int{}) }},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
