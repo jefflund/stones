@@ -1,9 +1,9 @@
 package main
 
 import (
-	"math/rand"
-
 	"github.com/jefflund/stones/pkg/hjkl"
+	"github.com/jefflund/stones/pkg/hjkl/gen"
+	"github.com/jefflund/stones/pkg/hjkl/rand"
 	"github.com/jefflund/stones/pkg/rpg"
 )
 
@@ -16,15 +16,30 @@ type Game struct {
 func NewGame() *Game {
 	cols, rows := 80, 24
 
-	level := hjkl.GenTileGrid(cols, rows, func(o hjkl.Vector) *hjkl.Tile {
+	level := gen.GenTileGrid(cols, rows, func(o hjkl.Vector) *hjkl.Tile {
 		t := hjkl.NewTile(o)
-		if rand.Float64() < 0.1 {
-			t.Face = hjkl.ChFg('%', hjkl.ColorGreen)
+		if rand.Chance(0.1) {
+			t.Face = rand.Choice([]hjkl.Glyph{
+				hjkl.ChFg('%', hjkl.ColorGreen),
+				hjkl.ChFg('%', hjkl.ColorGreen),
+				hjkl.ChFg('%', hjkl.ColorLightGreen),
+				hjkl.ChFg('%', hjkl.ColorLightYellow),
+			})
 			t.Pass = false
+		} else {
+			t.Face = rand.Choice([]hjkl.Glyph{
+				hjkl.ChFg('.', hjkl.ColorGreen),
+				hjkl.ChFg('.', hjkl.ColorGreen),
+				hjkl.ChFg('.', hjkl.ColorGreen),
+				hjkl.ChFg('.', hjkl.ColorLightGreen),
+				hjkl.ChFg('.', hjkl.ColorLightGreen),
+				hjkl.ChFg('.', hjkl.ColorLightYellow),
+				hjkl.ChFg('.', hjkl.ColorLightWhite),
+			})
 		}
 		return t
 	})
-	hjkl.GenFence(level, func(t *hjkl.Tile) {
+	gen.GenFence(level, func(t *hjkl.Tile) {
 		t.Face = hjkl.Ch('#')
 		t.Pass = false
 	})
