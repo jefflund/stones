@@ -48,24 +48,10 @@ func NewGame() *Game {
 		return t.Pass && t.Occupant == nil
 	}
 
-	hero := hjkl.NewMob(hjkl.Ch('@'))
-	hero.Components.Add(&rpg.Stats{
-		Health: 10,
-		Damage: 2,
-	})
+	hero := rpg.NewHero()
 	hjkl.PlaceMob(hero, rand.FilteredChoice(level, open))
-	for i := 1; i <= 10; i++ {
-		face := rand.Choice([]hjkl.Glyph{
-			hjkl.ChFg('u', hjkl.ColorRed),
-			hjkl.ChFg('U', hjkl.ColorRed),
-			hjkl.ChFg('d', hjkl.ColorRed),
-			hjkl.ChFg('D', hjkl.ColorRed),
-		})
-		mob := hjkl.NewMob(face)
-		mob.Components.Add(&rpg.Stats{
-			Health: i,
-			Damage: 1,
-		})
+	for i := 1; i <= 30; i++ {
+		mob := rand.Choice(rpg.Bestiary).New()
 		hjkl.PlaceMob(mob, rand.FilteredChoice(level, open))
 	}
 

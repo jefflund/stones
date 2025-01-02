@@ -7,12 +7,21 @@ type Damage struct {
 	Amount int
 }
 
-type Stats struct {
-	Health int
-	Damage int
+type Attributes struct {
+	MaxHealth int
+	Damage    int
 }
 
-func (c *Stats) Handle(e *hjkl.Mob, v hjkl.Event) {
+type Variables struct {
+	Health int
+}
+
+type Character struct {
+	Attributes
+	Variables
+}
+
+func (c *Character) Handle(e *hjkl.Mob, v hjkl.Event) {
 	switch v := v.(type) {
 	case *hjkl.Bump:
 		v.Bumped.Handle(&Damage{c.Damage})
