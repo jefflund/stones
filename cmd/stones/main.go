@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/jefflund/stones/pkg/hjkl"
+	"github.com/jefflund/stones/pkg/hjkl/clock"
 	"github.com/jefflund/stones/pkg/hjkl/gen"
 	"github.com/jefflund/stones/pkg/hjkl/rand"
 	"github.com/jefflund/stones/pkg/rpg"
@@ -11,6 +12,7 @@ type Game struct {
 	hjkl.Screen
 	Hero  *hjkl.Mob
 	Level []*hjkl.Tile
+	Clock *clock.Clock[*hjkl.Mob]
 }
 
 func NewGame() *Game {
@@ -48,18 +50,22 @@ func NewGame() *Game {
 		return t.Pass && t.Occupant == nil
 	}
 
+	clock := clock.New[*hjkl.Mob]()
+
 	hero := rpg.NewHero()
 	hjkl.PlaceMob(hero, rand.FilteredChoice(level, open))
+
 	for i := 1; i <= 30; i++ {
 		mob := rand.Choice(rpg.Bestiary).New()
 		hjkl.PlaceMob(mob, rand.FilteredChoice(level, open))
+		clock.Schedule(mob, i%10)
 	}
 
 	screen := hjkl.Screen{
 		hjkl.NewTilesWidget(hjkl.Vec(0, 0), hjkl.Vec(cols, rows), level),
 	}
 
-	return &Game{screen, hero, level}
+	return &Game{screen, hero, level, clock}
 }
 
 func (g *Game) Update(ks []hjkl.Key) error {
@@ -73,6 +79,17 @@ func (g *Game) Update(ks []hjkl.Key) error {
 			}
 		}
 	}
+
+	for _, m := range g.Clock.Tick() {
+		if m.Pos == nil {
+			continue
+		}
+
+		delta := rand.Choice(hjkl.CompassDirs)
+		m.Handle(&hjkl.Move{Delta: delta})
+		g.Clock.Schedule(m, rand.Range(10, 50))
+	}
+
 	return nil
 }
 

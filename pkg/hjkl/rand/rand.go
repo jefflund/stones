@@ -50,6 +50,14 @@ func Intn(n int) int {
 	return int(Uint64() % uint64(n))
 }
 
+// Range returns an int in [a, b]. It panics if b < a.
+func Range(a, b int) int {
+	if b < a {
+		panic("Invalid argument to Range")
+	}
+	return Intn(b-a+1) + a
+}
+
 // Chance returns true with probability p. It panics of p < 0 or p > 1.
 func Chance(p float64) bool {
 	if p < 0 || p > 1 {

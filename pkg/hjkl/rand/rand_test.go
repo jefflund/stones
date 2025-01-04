@@ -98,6 +98,16 @@ func TestIntn_100(t *testing.T) {
 	})
 }
 
+func TestRange(t *testing.T) {
+	exp := make([]int, 100)
+	for i := range 100 {
+		exp[i] = 100
+	}
+	RunX2TestCases("Range(-50, 49)+50", t, exp, func() int {
+		return Range(-50, 49) + 50
+	})
+}
+
 func TestChance_75(t *testing.T) {
 	exp := []int{75, 25}
 	RunX2TestCases("Chance(.75)", t, exp, func() int {
@@ -193,6 +203,7 @@ func TestInvalidArgs(t *testing.T) {
 	}{
 		{"Intn(0)", func() { Intn(0) }},
 		{"Intn(-1)", func() { Intn(-1) }},
+		{"Range(6, 5)", func() { Range(6, 5) }},
 		{"Chance(-0.0001)", func() { Chance(-0.0001) }},
 		{"Chance(1.0001)", func() { Chance(1.0001) }},
 		{"Choice(nil)", func() { Choice[string](nil) }},
@@ -218,6 +229,7 @@ func TestValidArgs(t *testing.T) {
 		call func()
 	}{
 		{"Intn(1)", func() { Intn(1) }},
+		{"Range(5, 5)", func() { Range(5, 5) }},
 		{"Chance(0)", func() { Chance(0) }},
 		{"Chance(1)", func() { Chance(1) }},
 	}
