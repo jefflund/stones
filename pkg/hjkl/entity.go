@@ -174,3 +174,8 @@ func PlaceMob(m *Mob, t *Tile) {
 	t.Occupant = m
 	m.Pos = t
 }
+
+// OpenTile returns true if the Tile is both passable and unoccupied.
+func OpenTile(t *Tile) bool {
+	return t.Pass && t.Occupant == nil
+}

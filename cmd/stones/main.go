@@ -18,46 +18,17 @@ type Game struct {
 func NewGame() *Game {
 	cols, rows := 80, 24
 
-	level := gen.GenTileGrid(cols, rows, func(o hjkl.Vector) *hjkl.Tile {
-		t := hjkl.NewTile(o)
-		if rand.Chance(0.1) {
-			t.Face = rand.Choice([]hjkl.Glyph{
-				hjkl.ChFg('%', hjkl.ColorGreen),
-				hjkl.ChFg('%', hjkl.ColorGreen),
-				hjkl.ChFg('%', hjkl.ColorLightGreen),
-				hjkl.ChFg('%', hjkl.ColorLightYellow),
-			})
-			t.Pass = false
-		} else {
-			t.Face = rand.Choice([]hjkl.Glyph{
-				hjkl.ChFg('.', hjkl.ColorGreen),
-				hjkl.ChFg('.', hjkl.ColorGreen),
-				hjkl.ChFg('.', hjkl.ColorGreen),
-				hjkl.ChFg('.', hjkl.ColorLightGreen),
-				hjkl.ChFg('.', hjkl.ColorLightGreen),
-				hjkl.ChFg('.', hjkl.ColorLightYellow),
-				hjkl.ChFg('.', hjkl.ColorLightWhite),
-			})
-		}
-		return t
-	})
-	gen.GenFence(level, func(t *hjkl.Tile) {
-		t.Face = hjkl.Ch('#')
-		t.Pass = false
-	})
-
-	open := func(t *hjkl.Tile) bool {
-		return t.Pass && t.Occupant == nil
-	}
+	level := gen.GenTileGrid(cols, rows, rpg.ForestTile)
+	gen.GenFence(level, rpg.ForestFence)
 
 	clock := clock.New[*hjkl.Mob]()
 
 	hero := rpg.NewHero()
-	hjkl.PlaceMob(hero, rand.FilteredChoice(level, open))
+	hjkl.PlaceMob(hero, rand.FilteredChoice(level, hjkl.OpenTile))
 
 	for i := 1; i <= 30; i++ {
 		mob := rand.Choice(rpg.Bestiary).New()
-		hjkl.PlaceMob(mob, rand.FilteredChoice(level, open))
+		hjkl.PlaceMob(mob, rand.FilteredChoice(level, hjkl.OpenTile))
 		clock.Schedule(mob, i%10)
 	}
 
